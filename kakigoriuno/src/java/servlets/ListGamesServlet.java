@@ -126,9 +126,10 @@ public class ListGamesServlet extends HttpServlet {
 
     private Game getNewGame() {
         Game newGame = new Game();
-        Long aLong = newGame.getGameId();
+        
+//        Long aLong = newGame.getGameId();
+//        newGame.setGameName(Integer.toString(getIntOfSumOfLongDigits(aLong)));
 
-        newGame.setGameName(Integer.toString(getIntOfSumOfLongDigits(aLong)));
         newGame.listGame();
         return newGame;
     }

@@ -70,10 +70,18 @@
                                 ${game.getGamePlayers().size()}
                             </c:if>
                         </td>
-                        <td><input type="radio" name=mapGameId value="${game.getGameId()}"/></td>
+                        <td>
+                            <c:if test="${empty game.getGamePlayers().size()}">
+                                <input type="radio" name=mapGameId value="${game.getGameId()}"/>
+                            </c:if>
+                            <c:if test="${game.getGamePlayers().size() <= 10}">
+                                <input type="radio" name=mapGameId value="${game.getGameId()}"/>
+                            </c:if>
+                        </td>
                     </tr>
                 </c:forEach>
             </table>
+            <br>
             <button type="submit">Join Table</button>
         </form>
 

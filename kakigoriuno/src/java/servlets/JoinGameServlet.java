@@ -4,11 +4,7 @@ import static utilities.Utilities.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -38,22 +34,22 @@ public class JoinGameServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        String strGameId, loginUserName, strTableNo;
+//        String strGameId, strTableNo;
         HttpSession session = req.getSession();
         ServletContext appScopeServlet = req.getServletContext();
-        Long lonGameId = null;
+//        Long lonGameId = null;
 
-        String strMapGameId, TableNo;
+        String strMapGameId, TableNo, loginUserName;
 
         gamesList = (List<Game>) appScopeServlet.getAttribute("gamesList");
 //        gamesMap = (Map<Long, Game>) appScopeServlet.getAttribute("gamesMap");
 
         User loginUser;
 //        User loginUser = new User();
-        Game currentGame = new Game();
+//        Game currentGame = new Game();
         Game currentGame2;
-        List<User> currentGamePlayers = new ArrayList();
-        List<User> currentGamePlayers2 = null;
+//        List<User> currentGamePlayers = new ArrayList();
+        List<User> currentGamePlayers2;
 
         loginUser = (User) session.getAttribute("loginuser");
         loginUserName = loginUser.getUsername();
@@ -113,14 +109,18 @@ public class JoinGameServlet extends HttpServlet {
             System.out.println(">>> from session strMapGameId = " + strMapGameId);
         }
         Long lonMapGameId = Long.valueOf(strMapGameId);
-        String strMapTableNo = getIntOfSumOfLongDigits(lonMapGameId).toString();
+//        String strMapTableNo = getIntOfSumOfLongDigits(lonMapGameId).toString();
         session.setAttribute("mapGameId", lonMapGameId);
 
-        TableNo = strMapTableNo;
-
         currentGame2 = gamesMap.get(lonMapGameId);
-        System.out.println(">>> currentGame2 = " + currentGame.toString());
+        String gameInstanceName = currentGame2.toString();
+        gameInstanceName = gameInstanceName.substring(12);
+        System.out.println(">>> currentGame2 = " + currentGame2.toString() + " - " + gameInstanceName);
+        System.out.println(">> currentGame2 = " + currentGame2);
 
+        String strMapTableNo = currentGame2.getGameName();
+        TableNo = strMapTableNo;
+        
         if (null == currentGame2.getGamePlayers()) {
             // no gamePlayers yet
             // add gamePlayers
@@ -131,45 +131,60 @@ public class JoinGameServlet extends HttpServlet {
             currentGamePlayers2 = currentGame2.getGamePlayers();
         }
         // add currentLoginUser to gamePlayers, if not already in there
-        if(!currentGamePlayers2.contains(loginUser)) {
-            boolean add = currentGamePlayers2.add(loginUser);            
-        }        
-        
-        String aString = "";
-        
+        if (!currentGamePlayers2.contains(loginUser)) {
+            boolean add = currentGamePlayers2.add(loginUser);
+        }
+
+        if (currentGame2.getGamePlayers().size() > 0) {
+            // change gameStatus to waitingToStart
+            if (currentGame2.isListed()) {
+                currentGame2.setupGame();
+            }
+        }
+
+        System.out.println(">> outside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
+        if (currentGame2.isStarted()) {
+            System.out.println(">>  inside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
+//            req.setAttribute("mapGameId", strMapGameId);
+//            rd = req.getRequestDispatcher("startGame");
+//            rd = req.getRequestDispatcher("playSubGame");
+//            rd.forward(req, resp);
+            session.setAttribute("mapGameId", strMapGameId);
+            resp.setHeader("Refresh", "0; playSubGame");
+        } else {
+            // Set refresh, autoload time as 5 seconds
+//            req.setAttribute("mapGameId", strMapGameId);
+            resp.setHeader("Refresh", "5");
+        }
+
+        String trPlayerList = "";
+
         int i = 1;
-        for(User aUser: currentGamePlayers2) {
-            aString = aString.concat("<tr>\n");
-            aString = aString.concat("<td>");
-            aString = aString.concat(Integer.toString(i++));
-            aString = aString.concat("</td>\n");
-            aString = aString.concat("<td>");
-            aString = aString.concat(aUser.getUsername());
-            aString = aString.concat("</td>\n");
-            aString = aString.concat("</tr>\n");
+        for (User aUser : currentGamePlayers2) {
+            trPlayerList = trPlayerList.concat("<tr>\n");
+            trPlayerList = trPlayerList.concat("<td>");
+            trPlayerList = trPlayerList.concat(Integer.toString(i++));
+            trPlayerList = trPlayerList.concat("</td>\n");
+            trPlayerList = trPlayerList.concat("<td>");
+            trPlayerList = trPlayerList.concat(aUser.getUsername());
+            trPlayerList = trPlayerList.concat("</td>\n");
+            trPlayerList = trPlayerList.concat("</tr>\n");
+        }
+
+        String startGameBtnVisibility = "";
+
+        if ((currentGamePlayers2.size() > 1) && (currentGamePlayers2.size() <= 10)) {
+            startGameBtnVisibility = startGameBtnVisibility.concat("<button type=\"submit\" name=mapGameId value=\"");
+            startGameBtnVisibility = startGameBtnVisibility.concat(strMapGameId);
+            startGameBtnVisibility = startGameBtnVisibility.concat("\">Start Game</button>\n");
         }
 
         System.out.println(">>> mapGameId: " + strMapGameId + " NoOfPlayers=" + gamesMap.get(lonMapGameId).getGamePlayers().size());
 
-        // Set refresh, autoload time as 5 seconds
-        resp.setIntHeader("Refresh", 5);
-
         // Set resp content type
         resp.setContentType("text/html");
 
-        // Get current time
-        Calendar calendar = new GregorianCalendar();
-        String am_pm;
-        int hour = calendar.get(Calendar.HOUR);
-        int minute = calendar.get(Calendar.MINUTE);
-        int second = calendar.get(Calendar.SECOND);
-        if (calendar.get(Calendar.AM_PM) == 0) {
-            am_pm = "AM";
-        } else {
-            am_pm = "PM";
-        }
-
-        String CT = hour + ":" + minute + ":" + second + " " + am_pm;
+        String CT = getCurrentTimeString();
 
         PrintWriter out = resp.getWriter();
         String pageTitle = "Uno Table " + TableNo;
@@ -187,19 +202,21 @@ public class JoinGameServlet extends HttpServlet {
                 + "<hr>"
                 + "<p>Current Time is: " + CT + "</p>\n"
                 + "<a href=\"listGames\">Return to Games Lounge</a><br><br>\n"
-                + "<form method=\"POST\" action=\"joinGame\">\n"
+                + "<h2>Table " + currentGame2.getGameName() + " status: " + currentGame2.getGameStatus() + "</h2><br>"
+                + "<form method=\"POST\" action=\"startGame\">\n"
                 + "<table border=\"1\">\n"
                 + "<tr>\n"
                 + "<td>Player Index</td>\n"
                 + "<td>Player UserName</td>\n"
                 + "</tr>\n"
-                + aString
-//                + "<tr>\n"
-//                + "<td>${gl.getGameName()}</td>\n"
-//                + "<td><input type=\"radio\" name=gameId value=\"${gl.getGameId()}\" /> </td>\n"
-//                + "</tr>\n"
+                + trPlayerList
+                //                + "<tr>\n"
+                //                + "<td>${gl.getGameName()}</td>\n"
+                //                + "<td><input type=\"radio\" name=gameId value=\"${gl.getGameId()}\" /> </td>\n"
+                //                + "</tr>\n"
                 + "</table><br><br>\n"
-                + "<button type=\"submit\">Join Game</button>\n"
+                //                + "<button type=\"submit\" name=mapGameId value=\"" + strMapGameId + "\">Start Game</button>\n"
+                + startGameBtnVisibility
                 + "</form>\n"
                 + "</body>\n"
                 + "</html>\n"
@@ -216,4 +233,4 @@ public class JoinGameServlet extends HttpServlet {
             throws ServletException, IOException {
         doPost(request, response);
     }
-} // ListGamesServlet
+} // joinGameServlet

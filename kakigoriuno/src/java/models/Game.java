@@ -7,13 +7,12 @@ package models;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Random;
-import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import static utilities.Utilities.*;
 
 /**
  *
@@ -45,9 +44,9 @@ public class Game implements Serializable {
 
     public Game() {
         super();
-        Random randomno = new Random();
-        long value = randomno.nextLong();
-        this.setGameId(value);
+        this.setGameId(getRandomLong());
+        String gameInstanceName = this.toString();
+        this.gameName = gameInstanceName.substring(12);
     }
 
     public Long getGameId() {
@@ -110,6 +109,10 @@ public class Game implements Serializable {
         this.gameStatus = "listed";
     }
 
+    public boolean isListed() {
+        return (this.gameStatus.equals("listed"));
+    }
+    
     public void setupGame() {
         this.gameStatus = "waitingToStart";
         // automatically do setup process once a player goes into an empty 'table'
@@ -120,9 +123,17 @@ public class Game implements Serializable {
         // then gameStatus = "started"
     }
     
+    public boolean isWaiting() {
+        return (this.gameStatus.equals("waitingToStart"));
+    }
+    
     public void startGame() {
         this.gameStatus = "started";
         // when 1st subGame has been started
+    }
+    
+    public boolean isStarted() {
+        return (this.gameStatus.equals("started"));
     }
     
     public void suspendGame() {
@@ -130,9 +141,17 @@ public class Game implements Serializable {
         // when a subgame is suspended
     }
     
+    public boolean isSuspended() {
+        return (this.gameStatus.equals("suspended"));
+    }
+    
     public void finishGame() {
         this.gameStatus = "finished";
         // once a player has won according to gameStyle
+    }
+    
+    public boolean isFinished() {
+        return (this.gameStatus.equals("finished"));
     }
     
     @Override
@@ -155,9 +174,9 @@ public class Game implements Serializable {
         return true;
     }
 
-    @Override
-    public String toString() {
-        return "models.Game[ id=" + gameId + " ]";
-    }
+//    @Override
+//    public String toString() {
+//        return "models.Game[ id=" + gameId + " ]";
+//    }
 
 }
