@@ -6,6 +6,7 @@
 package models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.util.concurrent.ThreadLocalRandom;
 import javax.persistence.OneToMany;
+import static utilities.Utilities.*;
 
 /**
  *
@@ -26,10 +28,36 @@ public class CardList implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long cardListId;
 
-    private String listType; // drawPile, discardPile, playerHand
+    private CardListType listType; // drawPile, discardPile, playerHand
+    
+    public enum CardListType{
+        DRAWPILE,
+        DISCARDPILE,
+        PLAYERHAND
+    }
     
     @OneToMany
     private List<Card> listOfCards;
+
+    // constructor
+    public CardList(CardListType listType) {
+        this.cardListId = getRandomLong();
+        this.listType = listType;
+        
+        this.listOfCards = new ArrayList();
+        
+        if(listType.equals(CardListType.DRAWPILE)) {
+            // initialise listOfCards with a new shuffled deck of 108 cards
+            for(int i=1; i<=108; i++) {
+                Card aCard = new Card(i);
+                this.listOfCards.add(aCard);
+            }
+            
+            // temporarily don't shuffle
+            //this.shuffleCards();            
+        }
+            
+    }
 
     public Long getCardListId() {
         return cardListId;
@@ -39,11 +67,11 @@ public class CardList implements Serializable {
         this.cardListId = cardListId;
     }
 
-    public String getListType() {
+    public CardListType getListType() {
         return listType;
     }
 
-    public void setListType(String listType) {
+    public void setListType(CardListType listType) {
         this.listType = listType;
     }
 
@@ -86,6 +114,17 @@ public class CardList implements Serializable {
             this.listOfCards.add(randomInt + 1, tempCard); // place back Card A into B's original position, need the +1 else it'll be a three cards swap
         }
     }
+    
+    public int size() {
+        return (this.listOfCards.size());
+    }
+    
+    public Card getTopCard() {
+        if(this.listOfCards.isEmpty())
+            return null;
+        else
+            return this.listOfCards.get(0);
+    }
 
     @Override
     public int hashCode() {
@@ -109,7 +148,14 @@ public class CardList implements Serializable {
 
     @Override
     public String toString() {
-        return "models.CardList[ id=" + cardListId + " ]";
+        String rtnString;
+                
+        rtnString = "models.CardList[ id=" + cardListId + " ]\n";
+        for(Card aCard: this.getListOfCards()) {
+            rtnString = rtnString.concat(aCard.toString());
+        }
+        
+        return rtnString;
     }
 
 }

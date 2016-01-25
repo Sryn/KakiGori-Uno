@@ -2,6 +2,7 @@ package models;
 
 import java.io.Serializable;
 import javax.enterprise.context.RequestScoped;
+import static utilities.Utilities.*;
 
 @RequestScoped
 public class User implements Serializable {
@@ -12,6 +13,8 @@ public class User implements Serializable {
     private String email;
     private String password;
     private Integer points;
+    
+    private int intForRandomAvatar; // from 1 to 16 inclusive
 
     public User(String username, String email, String password, int points) {
         super();
@@ -25,6 +28,7 @@ public class User implements Serializable {
         //To change body of generated methods, choose Tools | Templates.
 //        throw new UnsupportedOperationException("Not supported yet."); 
         super();
+        this.intForRandomAvatar = getRandomInt(1, 16);
     }
     
     public String getUsername() {
@@ -57,6 +61,14 @@ public class User implements Serializable {
 
     public void setPoints(Integer points) {
         this.points = points;
+    }
+
+    public int getIntForRandomAvatar() {
+        return intForRandomAvatar;
+    }
+
+    public void setIntForRandomAvatar(int intForRandomAvatar) {
+        this.intForRandomAvatar = intForRandomAvatar;
     }
 
     public User copy() {

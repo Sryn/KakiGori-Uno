@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import static utilities.Utilities.*;
 
 /**
@@ -35,27 +36,40 @@ public class Game implements Serializable {
     
     private List<User> gamePlayers;
     
-    private String gameStyle; // lowestPoints, firstTo500
+    private GameStyle gameStyle; // lowestPoints, firstTo500
+    
+    public enum GameStyle{
+        LOWESTPOINTS,
+        FIRSTTO500
+    }
 
     @OneToMany(mappedBy = "game")
     private List<SubGame> subGameList;
+    
+    @OneToOne
+    private SubGame currentSubGame;
 
     private String gameStatus; // listed, waitingToStart, started, suspended, finished
+    
+    private User gameWinner;
 
+    // constructor
     public Game() {
         super();
-        this.setGameId(getRandomLong());
+//        this.setGameId(getRandomLong());
+        this.gameId = getRandomLong();
         String gameInstanceName = this.toString();
         this.gameName = gameInstanceName.substring(12);
+        this.gameStyle = GameStyle.LOWESTPOINTS;
     }
 
     public Long getGameId() {
         return gameId;
     }
 
-    public void setGameId(Long gameId) {
-        this.gameId = gameId;
-    }
+//    public void setGameId(Long gameId) {
+//        this.gameId = gameId;
+//    }
     
 //    public List<Player> getGamePlayers0() {
 //        return gamePlayers0;
@@ -81,11 +95,11 @@ public class Game implements Serializable {
         this.gamePlayers = gamePlayers;
     }
     
-    public String getGameStyle() {
+    public GameStyle getGameStyle() {
         return gameStyle;
     }
 
-    public void setGameStyle(String gameStyle) {
+    public void setGameStyle(GameStyle gameStyle) {
         this.gameStyle = gameStyle;
     }
 
@@ -95,6 +109,14 @@ public class Game implements Serializable {
 
     public void setSubGameList(List<SubGame> subGameList) {
         this.subGameList = subGameList;
+    }
+
+    public SubGame getCurrentSubGame() {
+        return currentSubGame;
+    }
+
+    public void setCurrentSubGame(SubGame currentSubGame) {
+        this.currentSubGame = currentSubGame;
     }
 
     public String getGameStatus() {
@@ -152,6 +174,24 @@ public class Game implements Serializable {
     
     public boolean isFinished() {
         return (this.gameStatus.equals("finished"));
+    }
+    
+    public User getGameWinner() {
+        return gameWinner;
+    }
+
+    public void setGameWinner(User gameWinner) {
+        this.gameWinner = gameWinner;
+    }
+
+    public SubGame getSubGameById(long subGameId) {
+        for(SubGame aRound: this.getSubGameList()) {
+            if(aRound.getSubGameId() == subGameId) {
+                return aRound;
+            }
+        }
+        
+        return null;
     }
     
     @Override

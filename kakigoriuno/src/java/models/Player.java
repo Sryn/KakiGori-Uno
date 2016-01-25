@@ -11,6 +11,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import models.CardList.CardListType;
+import static utilities.Utilities.*;
 
 /**
  *
@@ -29,8 +31,22 @@ public class Player implements Serializable {
     @OneToOne
     private CardList hand;
     
-    private Integer gamePoints;
-    private String playerStatus; // active, inactive
+    private int gamePoints;
+    private PlayerStatus playerStatus; // active, inactive
+    
+    public enum PlayerStatus{
+        ACTIVE,
+        INACTIVE
+    }
+
+    // constructor
+    public Player(User player) {
+        this.playerId = getRandomLong();
+        this.player = player;
+        this.hand = new CardList(CardListType.PLAYERHAND);
+        this.gamePoints = 0;
+        this.setPlayerStatus(PlayerStatus.ACTIVE);
+    }
 
     public Long getPlayerId() {
         return playerId;
@@ -54,7 +70,7 @@ public class Player implements Serializable {
     
     public void setHand(CardList hand) {
         this.hand = hand;
-        this.hand.setListType("playerHand");
+        this.hand.setListType(CardListType.PLAYERHAND);
     }
 
     public Integer getGamePoints() {
@@ -65,11 +81,11 @@ public class Player implements Serializable {
         this.gamePoints = gamePoints;
     }
 
-    public String getPlayerStatus() {
+    public PlayerStatus getPlayerStatus() {
         return playerStatus;
     }
 
-    public void setPlayerStatus(String playerStatus) {
+    public void setPlayerStatus(PlayerStatus playerStatus) {
         this.playerStatus = playerStatus;
     }
 

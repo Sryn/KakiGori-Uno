@@ -6,7 +6,9 @@
 package models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
@@ -17,6 +19,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import models.Card.Action;
+import models.CardList.CardListType;
+import static utilities.Utilities.*;
 
 /**
  *
@@ -32,25 +37,60 @@ public class SubGame implements Serializable {
 
     @ManyToOne
     private Game game;
-    
+
     @OneToMany
     private List<Player> subGamePlayers;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date subGameTimeStamp;
-    
+
     @OneToOne
     private CardList drawPile;
 
     @OneToOne
     private CardList discardPile;
-    
+
     @OneToOne
     private Player currentPlayer;
 
-    private List<Boolean> directionList; // true = clockwise/ascending-index, false = anti-clockwise/descending-index
-    
-    private String subGameStatus; // waitingToStart, started, suspended, finished
+    @OneToOne
+    private Player nextPlayer;
+
+    public enum Direction {
+        CLOCKWISE,
+        ANTICLOCKWISE
+    }
+
+    private List<Direction> directionList; // clockwise=ascending-index, anti-clockwise=descending-index
+
+    private int roundNo; // current game round number
+
+    private SubGameStatus subGameStatus; // preparing, started, suspended, finished
+
+    private Player subGameWinner;
+
+    public enum SubGameStatus {
+        PREPARED,
+        STARTED,
+        SUSPENDED,
+        FINISHED
+    }
+
+    public SubGame() {
+    }
+
+    // constructor
+    public SubGame(Game game, List<Player> subGamePlayers, int roundNo) {
+        this.subGameId = getRandomLong();
+        this.game = game;
+        this.subGamePlayers = subGamePlayers;
+        this.subGameTimeStamp = new java.util.Date();
+        this.drawPile = new CardList(CardListType.DRAWPILE);
+        this.discardPile = new CardList(CardListType.DISCARDPILE);
+        this.directionList = new ArrayList();
+        this.roundNo = roundNo;
+        this.setupSubGame();
+    }
 
     public Long getSubGameId() {
         return subGameId;
@@ -59,7 +99,7 @@ public class SubGame implements Serializable {
     public void setSubGameId(Long subGameId) {
         this.subGameId = subGameId;
     }
-    
+
     public Game getGame() {
         return game;
     }
@@ -79,39 +119,47 @@ public class SubGame implements Serializable {
     public Date getSubGameTimeStamp() {
         return subGameTimeStamp;
     }
-    
+
     public void setGameTimeStamp() {
         Calendar newCalendar = null;
         this.subGameTimeStamp = newCalendar.getTime();
     }
-    
+
     public void setSubGameTimeStamp(Date subGameTimeStamp) {
         this.subGameTimeStamp = subGameTimeStamp;
     }
-    
+
     public CardList getDrawPile() {
         return drawPile;
     }
-    
+
     public void setDrawPile(CardList drawPile) {
         this.drawPile = drawPile;
-        this.drawPile.setListType("drawPile");
+        this.drawPile.setListType(CardListType.DRAWPILE);
     }
-    
+
     public CardList getDiscardPile() {
         return discardPile;
     }
-    
+
     public void setDiscardPile(CardList discardPile) {
         this.discardPile = discardPile;
-        this.discardPile.setListType("discardPile");
+        this.discardPile.setListType(CardListType.DISCARDPILE);
     }
 
-    public String getSubGameStatus() {
+    public int getRoundNo() {
+        return roundNo;
+    }
+
+    public void setRoundNo(int roundNo) {
+        this.roundNo = roundNo;
+    }
+
+    public SubGameStatus getSubGameStatus() {
         return subGameStatus;
     }
 
-    public void setSubGameStatus(String subGameStatus) {
+    public void setSubGameStatus(SubGameStatus subGameStatus) {
         this.subGameStatus = subGameStatus;
     }
 
@@ -123,15 +171,24 @@ public class SubGame implements Serializable {
         this.currentPlayer = currentPlayer;
     }
 
-    public List<Boolean> getDirectionList() {
+    public Player getNextPlayer() {
+        return nextPlayer;
+    }
+
+    public void setNextPlayer(Player nextPlayer) {
+        this.nextPlayer = nextPlayer;
+    }
+
+    public List<Direction> getDirectionList() {
         return directionList;
     }
 
-    public void setDirectionList(List<Boolean> directionList) {
+    public void setDirectionList(List<Direction> directionList) {
         this.directionList = directionList;
     }
+
     public void setupSubGame() {
-        this.subGameStatus = "preparing";
+        this.subGameStatus = SubGameStatus.PREPARED;
         // automatically do setup process once a player has
         //  either clicked 'Start Game' 
         //  or previous subGame has 'finished'
@@ -157,22 +214,308 @@ public class SubGame implements Serializable {
         // wait for next player to 'add' valid card from his/her hand to discardPile
         // set subGameStatus = "started"
     }
-    
+
+    public boolean isPrepared() {
+        return (this.subGameStatus.equals(SubGameStatus.PREPARED));
+    }
+
     public void startSubGame() {
-        this.subGameStatus = "started";
+        this.subGameStatus = SubGameStatus.STARTED;
         // set TimeStamp
     }
-    
+
+    public boolean isStarted() {
+        return (this.subGameStatus.equals(SubGameStatus.STARTED));
+    }
+
     public void suspendSubGame() {
-        this.subGameStatus = "suspended";
+        this.subGameStatus = SubGameStatus.SUSPENDED;
         // when all players have left subgame before subGame winner is determined
     }
-    
+
+    public boolean isSuspended() {
+        return (this.subGameStatus.equals(SubGameStatus.SUSPENDED));
+    }
+
     public void finishSubGame() {
-        this.subGameStatus = "finished";
+        this.subGameStatus = SubGameStatus.FINISHED;
         // once a player finishes all his cards
     }
+
+    public boolean isFinished() {
+        return (this.subGameStatus.equals(SubGameStatus.FINISHED));
+    }
+
+    public Player getSubGameWinner() {
+        return subGameWinner;
+    }
+
+    public void setSubGameWinner(Player subGameWinner) {
+        this.subGameWinner = subGameWinner;
+    }
+
+//    public void moveBackAllCardsToDrawPile(List<Player> firstRoundPlayers, SubGame currentRound) {
+    public void moveBackAllCardsToDrawPile() {
+        // move all cards from each player's hand back to the drawPile
+//        List <Player> firstRoundPlayers = this.subGamePlayers;
+//        SubGame currentRound = this;
+
+        for (Player aPlayer : this.subGamePlayers) {
+            CardList currentHand = aPlayer.getHand();
+            while (!currentHand.getListOfCards().isEmpty()) {
+                this.getDrawPile().addCard(currentHand.drawCard());
+            }
+        }
+        this.getDrawPile().shuffleCards();
+    }
+
+    public void movePlayersBeforeFirstPlayerToEndOfList() {
+        int i = 0;
+        Player currentPlayer;
+        List<Player> tempList = new ArrayList();
+        List<Player> tempOrig = new ArrayList(this.subGamePlayers);
+
+        Collections.copy(tempOrig, this.subGamePlayers);
+
+//        while(currentPlayer != this.getCurrentPlayer()) {
+//            currentPlayer = this.subGamePlayers.remove(i);
+//            this.subGamePlayers.add(currentPlayer);
+//            i++;
+//            currentPlayer = this.subGamePlayers.get(i);
+//        }
+        // move players before currentPlayer to tempList
+        for (Player aPlayer : tempOrig) {
+            if (aPlayer != this.getCurrentPlayer()) {
+                currentPlayer = this.subGamePlayers.remove(i++);
+                tempList.add(currentPlayer);
+            } else {
+                break;
+            }
+        }
+
+        // move players in tempList back to the end of currentGame SubPlayersList
+        for (Player aPlayer : tempList) {
+            this.subGamePlayers.add(aPlayer);
+        }
+
+    }
+
+    public String getPlayersListText() {
+        String rtnString = "";
+        for (Player aPlayer : this.getSubGamePlayers()) {
+            rtnString = rtnString.concat("\t\t>> ");
+            rtnString = rtnString.concat(aPlayer.getPlayer().getUsername());
+            rtnString = rtnString.concat("\n");
+        }
+        return rtnString;
+    }
+
+    public void dealOutOneCardEachToEveryPlayer() {
+        Card aCard;
+
+        for (Player aPlayer : this.getSubGamePlayers()) {
+            aCard = this.drawPile.drawCard();
+            aPlayer.getHand().addCard(aCard);
+        }
+
+    }
+
+    public void dealOutSevenCardsToEveryPlayer() {
+        for (int i = 1; i <= 7; i++) {
+            this.dealOutOneCardEachToEveryPlayer();
+        }
+
+    }
+
+    public String listAllCardListSizes() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String rtnString = "";
+        rtnString = rtnString.concat("\t\tDrawPile    = " + Integer.toString(this.drawPile.getListOfCards().size()) + "\n");
+        rtnString = rtnString.concat("\t\tDiscardPile = " + Integer.toString(this.discardPile.getListOfCards().size()) + "\n");
+        for (Player aPlayer : this.subGamePlayers) {
+            rtnString = rtnString.concat(
+                    "\t\t" + aPlayer.getPlayer().getUsername()
+                    + " Hand = " + Integer.toString(aPlayer.getHand().getListOfCards().size())
+                    + "\n");
+        }
+        return rtnString;
+    }
+
+    public Boolean drawOneCardFromDrawPileToDiscardPile() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Card aCard;
+
+        if (this.drawPile.getListOfCards().isEmpty()) {
+            // drawPile empty, so refill drawPile with the cards in discardPile except its top card
+            if (refillDrawPile()) {
+                return true;
+            } else {
+                // cannot deal out
+                return false;
+            }
+        } else {
+            aCard = this.drawPile.drawCard();
+            this.discardPile.addCard(aCard);
+            return true;
+        }
+    }
+
+    public String showDrawAndDiscardPilesTopCards() {
+        String rtnString = "";
+
+        rtnString = rtnString.concat("\t\tDrawPile    top card = " + listCardListTopCard(this.getDrawPile()) + "\n");
+        rtnString = rtnString.concat("\t\tDiscardPile top card = " + listCardListTopCard(this.getDiscardPile()) + "\n");
+
+        return rtnString;
+    }
+
+    private String listCardListTopCard(CardList aList) {
+        if (aList.getListOfCards().isEmpty()) {
+            return "Empty List";
+        } else {
+            return (aList.getListOfCards().get(0).toString());
+        }
+    }
+
+    public boolean refillDrawPile() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if ((this.discardPile.getListOfCards().isEmpty()) || (this.discardPile.getListOfCards().size() == 1)) {
+            // error: discardPile empty or just one card there
+            System.out.println("### Error: discardPile size=" + this.discardPile.getListOfCards().size());
+            return false;
+        } else {
+            Card aCard;
+
+            aCard = this.discardPile.drawCard(); // save the discardPile top card
+            moveAllCards(this.discardPile, this.drawPile);
+            this.discardPile.addCard(aCard); // put back the discardPile top card
+
+            this.drawPile.shuffleCards();
+
+            return true;
+        }
+    }
+
+    public void moveAllCards(CardList fromList, CardList destList) {
+
+        Card aCard;
+
+        while (!(fromList.getListOfCards().isEmpty())) {
+            aCard = fromList.drawCard();
+            destList.addCard(aCard);
+        }
+    }
+
+    public void givePlayer2Cards(Player currentPlayer) {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.givePlayerXCards(currentPlayer, 2);
+    }
+
+    public void givePlayer4Cards(Player currentPlayer) {
+        this.givePlayerXCards(currentPlayer, 4);
+    }
+
+    private void givePlayerXCards(Player currentPlayer, int noOfCardsToGive) {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Card aCard;
+
+        for (int i = 0; i < noOfCardsToGive; i++) {
+            aCard = this.getTopCardFromDrawPile();
+            currentPlayer.getHand().addCard(aCard);
+        }
+    }
+
+    private Card getTopCardFromDrawPile() {
+        return this.drawPile.drawCard();
+    }
+
+    public Player getLastPlayer() {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (this.subGamePlayers.isEmpty()) {
+            return null;
+        } else {
+            return (this.subGamePlayers.get(this.subGamePlayers.size() - 1));
+        }
+    }
+
+    public Player getNextPlayer(Player currentPlayer) {
+
+        Player privNextPlayer = null;
+        int dirListSize = this.getDirectionList().size(), currentPlayerIndex, nextPlayerIndex;
+
+        currentPlayerIndex = this.getSubGamePlayers().indexOf(currentPlayer);
+
+        if (dirListSize == 0) {
+            // error: DirectionList size shouldn't be 0
+            System.out.println("### Error: directionList size = " + dirListSize);
+        } else if (currentPlayerIndex == -1) {
+            // error: currentPlayer not found in list
+            System.out.println("### Error: Not found in current SubGamePlayersList = " + currentPlayer.toString());
+        } else {
+            if (getLastDirection().equals(Direction.CLOCKWISE)) {
+                // if true, means clockwise or increasing index
+
+                nextPlayerIndex = currentPlayerIndex + 1;
+
+                // nextPlayerIndex is more than the index of the last player
+                if (nextPlayerIndex >= this.getSubGamePlayers().size()) {
+                    // go back to front of list
+                    nextPlayerIndex = nextPlayerIndex - this.getSubGamePlayers().size();
+                }
+            } else {
+                // false, therefore anti-clockwise or decreasing index
+                nextPlayerIndex = currentPlayerIndex - 1;
+
+                // nextPlayerIndex is less than the index of the first player
+                if (nextPlayerIndex < 0) {
+                    // go back to back of list
+                    nextPlayerIndex = this.getSubGamePlayers().size() + nextPlayerIndex;
+                }
+            }
+
+            privNextPlayer = this.subGamePlayers.get(nextPlayerIndex);
+        }
+
+        return privNextPlayer;
+    }
     
+    public Direction getLastDirection() {
+        if(this.directionList.isEmpty()) {
+            return null;
+        } else {
+            int dirListSize = this.directionList.size();
+            
+            return (this.directionList.get(dirListSize - 1));
+        }
+    }
+
+    public Player getAfterSkipPlayer(Player currentPlayer) {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Player afterSkipPlayer;
+        
+        afterSkipPlayer = getPlayerAfterNextPlayerIsSkipped(currentPlayer);
+        
+        return afterSkipPlayer;
+    }
+    
+    public Player getAfterDraw2Player(Player currentPlayer) {
+        Player afterDraw2Player;
+        
+        afterDraw2Player = getPlayerAfterNextPlayerIsSkipped(currentPlayer);
+        
+        return afterDraw2Player;
+    }
+    
+    private Player getPlayerAfterNextPlayerIsSkipped(Player currentPlayer) {
+        Player afterSkippedPlayer, privNextPlayer;
+        
+        privNextPlayer = getNextPlayer(currentPlayer);
+        
+        afterSkippedPlayer = getNextPlayer(privNextPlayer);
+        
+        return afterSkippedPlayer;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;

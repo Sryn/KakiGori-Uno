@@ -39,7 +39,7 @@ public class JoinGameServlet extends HttpServlet {
         ServletContext appScopeServlet = req.getServletContext();
 //        Long lonGameId = null;
 
-        String strMapGameId, TableNo, loginUserName;
+        String strMapGameId = null, TableNo, loginUserName;
 
         gamesList = (List<Game>) appScopeServlet.getAttribute("gamesList");
 //        gamesMap = (Map<Long, Game>) appScopeServlet.getAttribute("gamesMap");
@@ -104,9 +104,14 @@ public class JoinGameServlet extends HttpServlet {
         if (null == session.getAttribute("mapGameId")) {
             strMapGameId = req.getParameter("mapGameId");
             System.out.println(">>> from req strMapGameId = " + strMapGameId);
-        } else {
+        } else if(null != session.getAttribute("mapGameId")) {
             strMapGameId = session.getAttribute("mapGameId").toString();
             System.out.println(">>> from session strMapGameId = " + strMapGameId);
+        } else {
+            // somehow the radio button in lounge deactivated (after 5 secs)
+            //  right when the loginUser pressed the button
+            // therefore, go back to lounge
+            req.getRequestDispatcher("lounge.jsp").forward(req, resp);
         }
         Long lonMapGameId = Long.valueOf(strMapGameId);
 //        String strMapTableNo = getIntOfSumOfLongDigits(lonMapGameId).toString();
