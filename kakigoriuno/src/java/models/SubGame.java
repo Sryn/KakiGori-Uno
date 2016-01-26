@@ -19,7 +19,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
-import models.Card.Action;
 import models.CardList.CardListType;
 import static utilities.Utilities.*;
 
@@ -550,8 +549,14 @@ public class SubGame implements Serializable {
                     this.directionList.add(Direction.ANTICLOCKWISE);
                 else
                     this.directionList.add(Direction.CLOCKWISE);
-                // get new next player after direction change
-                nextPlayer = this.getNextPlayer(this.currentPlayer);
+                // there's a special case in a two-players subGame/round where a reverse is like a skip
+                if(this.getSubGamePlayers().size() == 2)
+                    // play returns to the currentPlayer
+                    nextPlayer = this.getAfterSkipPlayer(privCurrentPlayer);
+                else 
+                    // not a two-players game
+                    // get new next player after direction change
+                    nextPlayer = this.getNextPlayer(this.currentPlayer);
                 break;
             case DRAW2:
                 this.directionList.add(currentDirection);

@@ -8,7 +8,6 @@ package servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.inject.Inject;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -51,7 +50,7 @@ public class skipTurn extends HttpServlet {
         Long lonMapGameId;
         Game currentGame;
         SubGame currentSubGame;
-        Player currentLoginPlayer;
+        Player currentLoginPlayer, nextPlayer;
         Boolean doDraw = true;
 
         User loginUser = (User) session.getAttribute("loginuser");
@@ -61,27 +60,22 @@ public class skipTurn extends HttpServlet {
         currentSubGame = currentGame.getCurrentSubGame();
         currentLoginPlayer = currentSubGame.getPlayerFromUserObject(loginUser);
 
-        System.out.println(">>> In skipTurn");
+        System.out.println(">>> In skipTurn with " + currentLoginPlayer.getPlayer().getUsername());
         
-        if (currentSubGame.getDrawPile().getListOfCards().isEmpty()) {
-            if (currentSubGame.getDiscardPile().size() > 1) {
-                currentSubGame.refillDrawPile();
-                doDraw = true;
-            } else {
-                doDraw = false;
-            }
-        } else {
-            doDraw = true;
-        }
+        // add same direction as last direction to directionList
+        currentSubGame.getDirectionList().add(currentSubGame.getLastDirection());
         
-//        if(doDraw) {
-//            currentLoginPlayer.getHand().addCard(currentSubGame.getDrawPile().drawCard());
-//            System.out.println(">>> drawCard OK");
-//        }
-
+        // nextPlayer should now become currentPlayer
+        nextPlayer = currentSubGame.getNextPlayer(currentLoginPlayer);
+        currentSubGame.setCurrentPlayer(nextPlayer);
+        
+        // return to PlaySubGame
 //        resp.setHeader("Refresh", "0; playSubGame");
-//        req.setAttribute("doDraw", doDraw);
-//        req.getRequestDispatcher("playSubGame").forward(req, resp);
+//        req.setAttribute("doDraw", "false");
+//        req.setAttribute("doDraw", false);
+//        req.setAttribute("adcfdp", "false");
+        req.setAttribute("adcfdp", false);
+        req.getRequestDispatcher("playSubGame").forward(req, resp);
 
         resp.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = resp.getWriter()) {

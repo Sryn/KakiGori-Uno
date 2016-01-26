@@ -244,7 +244,8 @@ public class StartGameServlet extends HttpServlet {
 //        req.getRequestDispatcher("playSubGame");
         session.setAttribute("mapGameId", strMapGameId);
 //        resp.setHeader("Refresh", "0; playSubGame");
-        req.setAttribute("doDraw", false);
+//        req.setAttribute("doDraw", false);
+        req.setAttribute("adcfdp", false);
         req.getRequestDispatcher("playSubGame").forward(req, resp);
 
         resp.setContentType("text/html;charset=UTF-8");

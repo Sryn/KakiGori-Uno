@@ -8,7 +8,6 @@ package servlets;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.inject.Inject;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -64,7 +63,7 @@ public class playCard extends HttpServlet {
         currentLoginPlayer = currentSubGame.getPlayerFromUserObject(loginUser);
 
         System.out.println(">>> In playCard with cardChoice = " + req.getParameter("cardChoice")
-                + " and reqPar adcfdp=" + req.getParameter("adcfdp"));
+                + " and reqPar adcfdp=" + req.getParameter("adcfdp") + " with Player " + currentLoginPlayer.getPlayer().getUsername());
 
         if (null == req.getParameter("cardChoice")) {
             // no choice made so go back
@@ -82,6 +81,7 @@ public class playCard extends HttpServlet {
             
             if (pairOfCardMatchDeterminator(chosenCard, discardPileTopCard)) {
                 loadError = false;
+                                
                 // remove chosenCard from loginPlayer hand
                 currentLoginPlayer.getHand().removeCard(chosenCard);
                 // put chosenCard to top of discardPile
@@ -98,7 +98,8 @@ public class playCard extends HttpServlet {
 //                // set nextPlayer as new currentPlayer
                     currentSubGame.setCurrentPlayer(nextPlayer);
                     
-                    req.setAttribute("adcfdp", "false");
+//                    req.setAttribute("adcfdp", "false");
+                    req.setAttribute("adcfdp", false);
                     req.getRequestDispatcher("playSubGame").forward(req, resp);
                 }
             } else {

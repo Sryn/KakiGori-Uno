@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.*;
-import models.Card.Colour;
 import models.SubGame.Direction;
 //import models.CardList;
 //import models.Game;
@@ -72,13 +71,22 @@ public class PlaySubGameServlet extends HttpServlet {
         strGameName = currentGame.getGameName();
 
         currentSubGame = currentGame.getCurrentSubGame();
-        
-        if(null != req.getAttribute("doDraw")) { // from returned drawCard
-            afterDrawingCardFromDrawPile = (Boolean) req.getAttribute("doDraw");
+        /*
+        if(null != req.getAttribute("doDraw")) { // from returned drawCard & from skipTurn
+            if(req.getAttribute("doDraw").equals("true"))
+                afterDrawingCardFromDrawPile = true;
+            else if(req.getAttribute("doDraw").equals("false"))
+                afterDrawingCardFromDrawPile = false;
+            else
+                System.out.println("### ERROR: req.getAttribute(\"doDraw\") = " + req.getAttribute("doDraw"));
+                
+//            afterDrawingCardFromDrawPile = (Boolean) req.getAttribute("doDraw");
 //            session.setAttribute("doDraw", afterDrawingCardFromDrawPile);
             if(afterDrawingCardFromDrawPile)
-                resp.setHeader("doDraw", afterDrawingCardFromDrawPile.toString());
-        } else if(null != req.getParameter("adcfdp")) { // from refresh setHeader
+                resp.setHeader("doDraw", "true");
+        } else 
+        */
+        if(null != req.getParameter("adcfdp")) { // from refresh setHeader
             if(req.getParameter("adcfdp").equals("true")) {
                 afterDrawingCardFromDrawPile = true;
             } else if(req.getParameter("adcfdp").equals("false")) {
@@ -86,21 +94,26 @@ public class PlaySubGameServlet extends HttpServlet {
             } else {
                 System.out.println("### ERROR: req.getParameter(\"adcfdp\") = " + req.getParameter("adcfdp"));
             }
-//            System.out.println(">>> req.getParameter(\"adcfdp\") = " + req.getParameter("adcfdp"));
+            System.out.println(">>> req.getParameter(\"adcfdp\") = " + req.getParameter("adcfdp"));
         } else if(null != req.getAttribute("adcfdp")) { // from returned playCard
-            if(req.getAttribute("adcfdp").equals("true")) {
-                afterDrawingCardFromDrawPile = true;
-            } else if(req.getAttribute("adcfdp").equals("false")) {
-                afterDrawingCardFromDrawPile = false;
-            } else {
-                System.out.println("### ERROR: req.getAttribute(\"adcfdp\") = " + req.getAttribute("adcfdp"));
-            }
+            afterDrawingCardFromDrawPile = (Boolean) req.getAttribute("adcfdp");
+//            if(req.getAttribute("adcfdp").equals("true")) {
+//                afterDrawingCardFromDrawPile = true;
+//            } else if(req.getAttribute("adcfdp").equals("false")) {
+//                afterDrawingCardFromDrawPile = false;
+//            } else {
+//                System.out.println("### ERROR: req.getAttribute(\"adcfdp\") = " + req.getAttribute("adcfdp"));
+//            }
             System.out.println(">>> req.getAttribute(\"adcfdp\") = " + req.getAttribute("adcfdp"));
         } else {
 //            afterDrawingCardFromDrawPile = (Boolean) session.getAttribute("doDraw");
-            afterDrawingCardFromDrawPile = resp.containsHeader("doDraw");
-            if(afterDrawingCardFromDrawPile)
-                resp.setHeader("doDraw", afterDrawingCardFromDrawPile.toString());
+//            afterDrawingCardFromDrawPile = resp.containsHeader("doDraw");
+//            if(afterDrawingCardFromDrawPile)
+//                resp.setHeader("doDraw", afterDrawingCardFromDrawPile.toString());
+            // there's neither adcfdp in attribute nor parameter, so assume adcfdp is false
+            System.out.println("### ERROR: req.getParameter(\"adcfdp\") = " + req.getParameter("adcfdp"));
+            System.out.println("### ERROR: req.getAttribute(\"adcfdp\") = " + req.getAttribute("adcfdp"));
+            afterDrawingCardFromDrawPile = false;
         }
         
 //        System.out.println("### req.getAttribute(\"adcfdp\") = " + req.getAttribute("adcfdp")); // this was not it
@@ -128,6 +141,7 @@ public class PlaySubGameServlet extends HttpServlet {
             currentPlayer = currentSubGame.getCurrentPlayer();
             matchingCardsCount = loginPlayer.countHowManyMatchingCards(topDiscardPileCard);
             addUpHandPoints = loginPlayer.addUpHandPoints();
+            roundMoveNo = currentSubGame.getDirectionList().size();
         }
         
         if(loadError) {
@@ -196,7 +210,7 @@ public class PlaySubGameServlet extends HttpServlet {
                 + afterDrawingCardFromDrawPile + "\">" // to use if playCard was made without a cardChoice
                 + "</table><br>\n"
                 + "You have a total of " + addUpHandPoints + " points in your hand.<br><br>\n"
-                + getPlayOrDrawCardBtn(strMapGameId)
+                + getPlayCardBtn(strMapGameId, loginPlayerTurn)
                 //                + playOrDrawCardBtnVisibility
                 + "</form>\n"
                 + "</body>\n"
@@ -241,10 +255,10 @@ public class PlaySubGameServlet extends HttpServlet {
             return "";
     }
     
-    public String getPlayOrDrawCardBtn(String strMapGameId) {
+    public String getPlayCardBtn(String strMapGameId, Boolean loginPlayerTurn) {
         String playOrDrawCardBtnVisibility = "";
         // show button when its the loginUser's turn
-        if (true) {
+        if (loginPlayerTurn) {
             playOrDrawCardBtnVisibility = playOrDrawCardBtnVisibility.concat("<button type=\"submit\" name=mapGameId value=\"");
             playOrDrawCardBtnVisibility = playOrDrawCardBtnVisibility.concat(strMapGameId);
             playOrDrawCardBtnVisibility = playOrDrawCardBtnVisibility.concat("\">Play Card</button>\n");

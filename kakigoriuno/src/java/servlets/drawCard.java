@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import models.Card;
 import models.Game;
 import models.GamesMap;
 import models.Player;
@@ -53,6 +54,7 @@ public class drawCard extends HttpServlet {
         SubGame currentSubGame;
         Player currentLoginPlayer;
         Boolean doDraw = true;
+        Card drawnCard;
 
         User loginUser = (User) session.getAttribute("loginuser");
         strMapGameId = (String) session.getAttribute("mapGameId");
@@ -61,7 +63,7 @@ public class drawCard extends HttpServlet {
         currentSubGame = currentGame.getCurrentSubGame();
         currentLoginPlayer = currentSubGame.getPlayerFromUserObject(loginUser);
 
-        System.out.println(">>> In drawCard");
+        System.out.println(">>> In drawCard with Player " + currentLoginPlayer.getPlayer().getUsername());
         
         if (currentSubGame.getDrawPile().getListOfCards().isEmpty()) {
             if (currentSubGame.getDiscardPile().size() > 1) {
@@ -75,12 +77,14 @@ public class drawCard extends HttpServlet {
         }
         
         if(doDraw) {
-            currentLoginPlayer.getHand().addCard(currentSubGame.getDrawPile().drawCard());
-            System.out.println(">>> drawCard OK");
+            drawnCard = currentSubGame.getDrawPile().drawCard();
+            currentLoginPlayer.getHand().addCard(drawnCard);
+            System.out.println(">>> drawCard OK: " + drawnCard.getCardName());
         }
 
 //        resp.setHeader("Refresh", "0; playSubGame");
-        req.setAttribute("doDraw", doDraw);
+//        req.setAttribute("doDraw", doDraw);
+        req.setAttribute("adcfdp", doDraw);
         req.getRequestDispatcher("playSubGame").forward(req, resp);
 
         resp.setContentType("text/html;charset=UTF-8");
