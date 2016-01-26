@@ -210,6 +210,7 @@ public class PlaySubGameServlet extends HttpServlet {
                 + afterDrawingCardFromDrawPile + "\">" // to use if playCard was made without a cardChoice
                 + "</table><br>\n"
                 + "You have a total of " + addUpHandPoints + " points in your hand.<br><br>\n"
+                + getColourOptions()
                 + getPlayCardBtn(strMapGameId, loginPlayerTurn)
                 //                + playOrDrawCardBtnVisibility
                 + "</form>\n"
@@ -221,6 +222,17 @@ public class PlaySubGameServlet extends HttpServlet {
         //                .forward(req, resp);
     } // doPost
 
+    private String getColourOptions() {
+        String rtnString = "";
+        
+        rtnString = rtnString.concat("<script>\n");
+        rtnString = rtnString.concat("if(document.getElementById('gender_Male').checked) {\n");
+        rtnString = rtnString.concat("}\n");
+        rtnString = rtnString.concat("</script>\n");
+        
+        return rtnString;
+    }
+    
     private String showMessageToPlayer(Boolean loginPlayerTurn, Player currentPlayer, int matchingCardsCount) {
         String strMessage = ""
                 , currentPlayerName = currentPlayer.getPlayer().getUsername();
