@@ -86,6 +86,12 @@ public class PlaySubGameServlet extends HttpServlet {
                 resp.setHeader("doDraw", "true");
         } else 
         */
+        
+        if(currentSubGame.isFinished()) {
+            // forward this loginUser to JoinGameServlet
+            req.getRequestDispatcher("joinGame").forward(req, resp);
+        }
+        
         if(null != req.getParameter("adcfdp")) { // from refresh setHeader
             if(req.getParameter("adcfdp").equals("true")) {
                 afterDrawingCardFromDrawPile = true;
@@ -222,13 +228,26 @@ public class PlaySubGameServlet extends HttpServlet {
         //                .forward(req, resp);
     } // doPost
 
+    private String getChooseColourButton() {
+        String rtnString = "";
+        
+        rtnString = rtnString.concat("");
+        rtnString = rtnString.concat("");
+        rtnString = rtnString.concat("");
+        rtnString = rtnString.concat("");
+        rtnString = rtnString.concat("");
+        
+        return rtnString;
+    }
+    
     private String getColourOptions() {
         String rtnString = "";
         
-        rtnString = rtnString.concat("<script>\n");
-        rtnString = rtnString.concat("if(document.getElementById('gender_Male').checked) {\n");
-        rtnString = rtnString.concat("}\n");
-        rtnString = rtnString.concat("</script>\n");
+        rtnString = rtnString.concat("");
+        rtnString = rtnString.concat("");
+        rtnString = rtnString.concat("");
+        rtnString = rtnString.concat("");
+        rtnString = rtnString.concat("");
         
         return rtnString;
     }
@@ -313,10 +332,16 @@ public class PlaySubGameServlet extends HttpServlet {
                         + loginPlayerHand.getListOfCards().get(i).getCardName() + "\">");
                 strHttpHandRow = strHttpHandRow.concat("</td></tr><tr><td align=\"center\">");
                 strHttpHandRow = strHttpHandRow.concat(loginPlayerHand.getListOfCards().get(i).getCardName());
-                if(loginPlayerTurn && pairOfCardMatchDeterminator(topDiscardPileCard, loginPlayerHand.getListOfCards().get(i)))
-                    strHttpHandRow = strHttpHandRow.concat(
-                        " - <input type=\"radio\" name=cardChoice value=\"" 
-                        + loginPlayerHand.getListOfCards().get(i).getCardId() + "\"/>");
+                if(loginPlayerTurn && pairOfCardMatchDeterminator(topDiscardPileCard, loginPlayerHand.getListOfCards().get(i))) {
+                    // if this card is wild or wild_draw4, offer a choice of colours
+                    if (false) { // card is wild or wild_draw4
+                        getChooseColourButton();
+                    } else { // card is not wild not wild_draw4
+                        strHttpHandRow = strHttpHandRow.concat(
+                            " - <input type=\"radio\" name=cardChoice value=\"" 
+                            + loginPlayerHand.getListOfCards().get(i).getCardId() + "\"/>");                    
+                    }
+                }
             } else {
                 strHttpHandRow = strHttpHandRow.concat("<td><table>\n<tr><td align=\"center\">");
     //            strHttpHandRow = strHttpHandRow.concat("<img src=\"images\\uno_deck\\" + getRandomUnoCardFileName() + "\" width=\"85\" height=\"128\" alt=\"Player's Hand Card No. " + i + " Face\">");

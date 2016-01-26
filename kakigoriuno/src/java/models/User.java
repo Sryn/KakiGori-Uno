@@ -12,8 +12,9 @@ public class User implements Serializable {
     private String username;
     private String email;
     private String password;
-    private Integer points;
-    
+    private int points;
+    private int tempPoints; // used per game
+
     private int intForRandomAvatar; // from 1 to 16 inclusive
 
     public User(String username, String email, String password, int points) {
@@ -22,6 +23,7 @@ public class User implements Serializable {
         this.email = email;
         this.password = password;
         this.points = points;
+        this.tempPoints = 0;
         this.intForRandomAvatar = getRandomInt(1, 16);
     }
 
@@ -56,7 +58,7 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public Integer getPoints() {
+    public int getPoints() {
         return points;
     }
 
@@ -64,6 +66,14 @@ public class User implements Serializable {
         this.points = points;
     }
 
+    public int getTempPoints() {
+        return tempPoints;
+    }
+
+    public void setTempPoints(int tempPoints) {
+        this.tempPoints = tempPoints;
+    }
+    
     public int getIntForRandomAvatar() {
         return intForRandomAvatar;
     }

@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Card;
 import models.Game;
+import models.Game.GameStyle;
 import models.GamesMap;
 import models.Player;
 import models.SubGame;
@@ -47,6 +48,7 @@ public class playCard extends HttpServlet {
 
         HttpSession session = req.getSession();
 
+        int currentPoints;
         String strMapGameId;
         Long lonMapGameId;
         Game currentGame;
@@ -91,6 +93,41 @@ public class playCard extends HttpServlet {
                 if (currentLoginPlayer.getHand().getListOfCards().isEmpty()) {
                     // subGame winner
                     System.out.println(">>> Player " + currentLoginPlayer.getPlayer().getUsername() + " is the winner of this subgame");
+                    currentSubGame.setSubGameWinner(currentLoginPlayer);
+                    currentSubGame.finishSubGame();
+                    currentGame.setupGame();
+                    if(currentGame.getGameStyle().equals(GameStyle.LOWESTPOINTS)) {
+                        // winner gets zero points
+                        // other players get points equal to their hand points
+                        for(Player aPlayer: currentSubGame.getSubGamePlayers()) {
+                            currentPoints = aPlayer.addUpHandPoints();
+                            aPlayer.setGamePoints(currentPoints);
+                        }
+                    } else if(currentGame.getGameStyle().equals(GameStyle.FIRSTTO500)) {
+                        // winner gets the total of all other players' hand points
+                        // other players get zero points
+                        currentPoints = 0;
+                        for(Player aPlayer: currentSubGame.getSubGamePlayers()) {
+                            currentPoints += aPlayer.addUpHandPoints();                            
+                            aPlayer.setGamePoints(0);
+                        }
+                        currentLoginPlayer.setGamePoints(currentPoints);
+                    } else {
+                        System.out.println("### ERROR: gamestyle=" + currentGame.getGameStyle().toString());                        
+                    }
+                    
+                    // add up all players points to respective game users tempPoints
+                    for(Player aPlayer: currentSubGame.getSubGamePlayers()) {
+                        for(User aUser: currentGame.getGamePlayers()) {
+                            if(aPlayer.getPlayer().equals(aUser)) {
+                                currentPoints = aPlayer.getGamePoints() + aUser.getTempPoints();
+                                aUser.setTempPoints(currentPoints);
+                            }
+                        }
+                    }
+                    
+//                    req.setAttribute("adcfdp", false);
+                    req.getRequestDispatcher("joinGame").forward(req, resp);
                 } else {
                     // process consequences of the chosenCard and get nextPlayer
                     nextPlayer = currentSubGame.processCardPlayedAndGetNextPlayer(chosenCard); // .getNextPlayer(currentLoginPlayer);

@@ -73,11 +73,11 @@ public class Player implements Serializable {
         this.hand.setListType(CardListType.PLAYERHAND);
     }
 
-    public Integer getGamePoints() {
+    public int getGamePoints() {
         return gamePoints;
     }
 
-    public void setGamePoints(Integer gamePoints) {
+    public void setGamePoints(int gamePoints) {
         this.gamePoints = gamePoints;
     }
 

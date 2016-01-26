@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Game;
+import models.Game.GameStyle;
 import models.GamesMap;
+import models.SubGame;
 import models.User;
 
 @WebServlet("/joinGame")
@@ -39,7 +41,9 @@ public class JoinGameServlet extends HttpServlet {
         ServletContext appScopeServlet = req.getServletContext();
 //        Long lonGameId = null;
 
-        String strMapGameId = null, TableNo, loginUserName;
+        String strMapGameId = null, TableNo, loginUserName, gameWinners = ""
+                , displayWinner = "", prevSubGameWinner = "";
+        Boolean gameFinished = false;
 
         gamesList = (List<Game>) appScopeServlet.getAttribute("gamesList");
 //        gamesMap = (Map<Long, Game>) appScopeServlet.getAttribute("gamesMap");
@@ -50,6 +54,7 @@ public class JoinGameServlet extends HttpServlet {
         Game currentGame2;
 //        List<User> currentGamePlayers = new ArrayList();
         List<User> currentGamePlayers2;
+        SubGame previousGame;
 
         loginUser = (User) session.getAttribute("loginuser");
         loginUserName = loginUser.getUsername();
@@ -166,7 +171,18 @@ public class JoinGameServlet extends HttpServlet {
 
         String trPlayerList = "";
 
-        int i = 1;
+        int i = 1, roundsPlayed = 0, noOfSubGames = 0;
+        
+        if(null != currentGame2.getSubGameList()) { // game has started
+            roundsPlayed = currentGame2.getSubGameList().size();
+                        
+        } else { // game hasn't started
+            // reset users tempPoints to 0 each
+            for(User aUser: currentGame2.getGamePlayers()) {
+                aUser.setTempPoints(0);
+            }
+        }
+        
         for (User aUser : currentGamePlayers2) {
             trPlayerList = trPlayerList.concat("<tr>\n");
             trPlayerList = trPlayerList.concat("<td>");
@@ -175,15 +191,50 @@ public class JoinGameServlet extends HttpServlet {
             trPlayerList = trPlayerList.concat("<td>");
             trPlayerList = trPlayerList.concat(aUser.getUsername());
             trPlayerList = trPlayerList.concat("</td>\n");
+            trPlayerList = trPlayerList.concat("<td>");
+            trPlayerList = trPlayerList.concat(Integer.toString(aUser.getTempPoints()));
+            trPlayerList = trPlayerList.concat("</td>\n");
             trPlayerList = trPlayerList.concat("</tr>\n");
+            
+            if(aUser.getTempPoints() >= 500) {
+                gameFinished = true;
+                currentGame2.finishGame();
+            }                
         }
 
+        if(gameFinished) {
+            gameWinners = getGameWinnerName(currentGamePlayers2, currentGame2.getGameStyle());
+            
+            displayWinner = displayWinner.concat("<h1>Game Winner(s): ");
+            displayWinner = displayWinner.concat(gameWinners);
+            displayWinner = displayWinner.concat("</h1>");
+        } else {
+            // display previous subgame winner, if any round has already been played
+            if(null != currentGame2.getSubGameList()) {
+                // there are subgames available
+                // get last subgame in list
+                noOfSubGames = currentGame2.getSubGameList().size();
+                previousGame = currentGame2.getSubGameList().get(noOfSubGames - 1);
+                if(null != previousGame.getSubGameWinner()) {
+                    prevSubGameWinner = previousGame.getSubGameWinner().getPlayer().getUsername();
+
+                    displayWinner = displayWinner.concat("<h1>Previous Round Winner is ");
+                    displayWinner = displayWinner.concat(prevSubGameWinner);
+                    displayWinner = displayWinner.concat("</h1>");
+                }
+            }
+        }
+        
         String startGameBtnVisibility = "";
 
         if ((currentGamePlayers2.size() > 1) && (currentGamePlayers2.size() <= 10)) {
             startGameBtnVisibility = startGameBtnVisibility.concat("<button type=\"submit\" name=mapGameId value=\"");
             startGameBtnVisibility = startGameBtnVisibility.concat(strMapGameId);
-            startGameBtnVisibility = startGameBtnVisibility.concat("\">Start Game</button>\n");
+            startGameBtnVisibility = startGameBtnVisibility.concat("\">Start Game Round</button>\n");
+        }
+        
+        if(gameFinished) { // don't show button
+            startGameBtnVisibility = "";
         }
 
         System.out.println(">>> mapGameId: " + strMapGameId + " NoOfPlayers=" + gamesMap.get(lonMapGameId).getGamePlayers().size());
@@ -209,20 +260,20 @@ public class JoinGameServlet extends HttpServlet {
                 + "<hr>"
                 + "<p>Current Time is: " + CT + "</p>\n"
                 + "<a href=\"listGames\">Return to Games Lounge</a><br><br>\n"
-                + "<h2>Table " + currentGame2.getGameName() + " status: " + currentGame2.getGameStatus() + "</h2><br>"
+                + "<h2>Table " + currentGame2.getGameName() + " status: " + currentGame2.getGameStatus() + "</h2>"
+                + "<h2>GameStyle: " + currentGame2.getGameStyle().toString() + "</h2>"
+                + showGameStyleNote(currentGame2.getGameStyle()) + "\n"
+                + displayWinner
+                + showRoundsPlayed(roundsPlayed)
                 + "<form method=\"POST\" action=\"startGame\">\n"
                 + "<table border=\"1\">\n"
                 + "<tr>\n"
                 + "<td>Player Index</td>\n"
                 + "<td>Player UserName</td>\n"
+                + "<td>Total Points</td>\n"
                 + "</tr>\n"
                 + trPlayerList
-                //                + "<tr>\n"
-                //                + "<td>${gl.getGameName()}</td>\n"
-                //                + "<td><input type=\"radio\" name=gameId value=\"${gl.getGameId()}\" /> </td>\n"
-                //                + "</tr>\n"
                 + "</table><br><br>\n"
-                //                + "<button type=\"submit\" name=mapGameId value=\"" + strMapGameId + "\">Start Game</button>\n"
                 + startGameBtnVisibility
                 + "</form>\n"
                 + "</body>\n"
@@ -232,6 +283,75 @@ public class JoinGameServlet extends HttpServlet {
         //        req.getRequestDispatcher("clock5secs.jsp")
         //                .forward(req, resp);
     } // doPost
+    
+    private String getGameWinnerName(List<User> currentGamePlayers, GameStyle style) {
+        String strWinnersNames = "";
+        int winningPoints = 0, noOfWinners = 0;
+        
+        if(style.equals(GameStyle.LOWESTPOINTS)) {
+            // winner is user with lowest tempPoints
+            winningPoints = currentGamePlayers.get(0).getTempPoints(); // temporarily set this as the lowest point
+            for(User aUser: currentGamePlayers) { // find the lowest points first
+                if(aUser.getTempPoints() < winningPoints) {
+                    winningPoints = aUser.getTempPoints();
+                }
+            }
+            for(User aUser: currentGamePlayers) { // find how many players have same points as winningPoints
+                if(aUser.getTempPoints() == winningPoints) {
+                    if(noOfWinners > 0) {
+                        strWinnersNames = strWinnersNames.concat(", "); // not printed if only one winner
+                    }
+                    strWinnersNames = strWinnersNames.concat(aUser.getUsername()); // add the winner's name
+                    noOfWinners++;
+                }                
+            }            
+        } else if(style.equals(GameStyle.FIRSTTO500)) {
+            // winner is user with most points
+            winningPoints = currentGamePlayers.get(0).getTempPoints(); // temporarily set this as the highest point
+            for(User aUser: currentGamePlayers) { // find the highest points first
+                if(aUser.getTempPoints() > winningPoints) {
+                    winningPoints = aUser.getTempPoints();
+                }
+            }
+            for(User aUser: currentGamePlayers) { // find how many players have same points as winningPoints
+                if(aUser.getTempPoints() == winningPoints) {
+                    if(noOfWinners > 0) {
+                        strWinnersNames = strWinnersNames.concat(", "); // not printed if only one winner
+                    }
+                    strWinnersNames = strWinnersNames.concat(aUser.getUsername()); // add the winner's name
+                    noOfWinners++;
+                }                
+            }            
+        } else {
+            System.out.println("### ERROR: Unknown GameStyle = " + style.toString());
+        }
+            
+        return strWinnersNames;
+    }
+    
+    private String showRoundsPlayed(int roundsPlayed) {
+        String rtnString = "";
+        rtnString = rtnString.concat("");
+        
+        rtnString = rtnString.concat("<h3>Rounds Played: " + roundsPlayed + "</h3>");
+        
+        return rtnString;
+    }
+    
+    private String showGameStyleNote(GameStyle style) {
+        String rtnString = "";
+        rtnString = rtnString.concat("");
+        
+        if(style.equals(GameStyle.LOWESTPOINTS)) {
+            rtnString = rtnString.concat("<h4><i>Note: Game ends when any player reaches 500 points and the winner is the player with lowest points.</i></h4>");
+        } else if(style.equals(GameStyle.FIRSTTO500)) {
+            rtnString = rtnString.concat("<h4><i>Note: Game ends when any player reaches 500 points and the player with the highest points is the winner.</i></h4>");
+        } else {
+            System.out.println("### ERROR: Unknown GameStyle = " + style.toString());
+        }
+        
+        return rtnString;
+    }
 
     // Method to handle GET method request.
     @Override
