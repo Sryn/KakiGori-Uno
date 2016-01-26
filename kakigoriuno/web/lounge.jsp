@@ -14,8 +14,9 @@
         <%
             // Set refresh, autoload time as 5 seconds
 //            response.setStatus(response.SC_MOVED_TEMPORARILY);
-            response.setHeader("Location", "listGames");
-            response.setIntHeader("Refresh", 5);
+//            response.setHeader("Location", "listGames");
+//            response.setIntHeader("Refresh", 5);
+            response.setHeader("Refresh", "5");
         %>
     </head>
     <body>

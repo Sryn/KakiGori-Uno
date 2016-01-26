@@ -40,8 +40,8 @@ public class StartGameServlet extends HttpServlet {
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
      *
-     * @param request servlet request
-     * @param response servlet response
+     * @param req servlet request
+     * @param resp servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
@@ -115,9 +115,7 @@ public class StartGameServlet extends HttpServlet {
                 // add new subGame to list of SubGames
                 listSubGameRounds.add(currentSubGame);
 
-                // get shuffled drawPile (needed ?!!!)
-//                CardList newRoundDrawPile = null;
-//                System.out.println(currentSubGame.getDrawPile().toString());
+                System.out.println(currentSubGame.getDrawPile().toString());
                 currentSubGame.getDrawPile().shuffleCards();
 
                 System.out.println(">> After shuffling");
@@ -245,7 +243,9 @@ public class StartGameServlet extends HttpServlet {
 //        req.getRequestDispatcher("playSubGame").forward(req, resp);
 //        req.getRequestDispatcher("playSubGame");
         session.setAttribute("mapGameId", strMapGameId);
-        resp.setHeader("Refresh", "0; playSubGame");
+//        resp.setHeader("Refresh", "0; playSubGame");
+        req.setAttribute("doDraw", false);
+        req.getRequestDispatcher("playSubGame").forward(req, resp);
 
         resp.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = resp.getWriter()) {
@@ -386,7 +386,7 @@ public class StartGameServlet extends HttpServlet {
 //                        Collections.copy(currentDrawPlayers, drawPlayers); 
 
                         while(!drawPlayers.isEmpty())
-                            currentDrawPlayers.add(drawPlayers.get(0));
+                            currentDrawPlayers.add(drawPlayers.remove(0));
                         
                         drawPlayers.clear();
                     }

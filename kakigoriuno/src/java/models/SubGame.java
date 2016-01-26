@@ -53,9 +53,8 @@ public class SubGame implements Serializable {
     @OneToOne
     private Player currentPlayer;
 
-    @OneToOne
-    private Player nextPlayer;
-
+//    @OneToOne
+//    private Player nextPlayer;
     public enum Direction {
         CLOCKWISE,
         ANTICLOCKWISE
@@ -171,14 +170,13 @@ public class SubGame implements Serializable {
         this.currentPlayer = currentPlayer;
     }
 
-    public Player getNextPlayer() {
-        return nextPlayer;
-    }
-
-    public void setNextPlayer(Player nextPlayer) {
-        this.nextPlayer = nextPlayer;
-    }
-
+//    public Player getNextPlayer() {
+//        return nextPlayer;
+//    }
+//
+//    public void setNextPlayer(Player nextPlayer) {
+//        this.nextPlayer = nextPlayer;
+//    }
     public List<Direction> getDirectionList() {
         return directionList;
     }
@@ -478,13 +476,13 @@ public class SubGame implements Serializable {
 
         return privNextPlayer;
     }
-    
+
     public Direction getLastDirection() {
-        if(this.directionList.isEmpty()) {
+        if (this.directionList.isEmpty()) {
             return null;
         } else {
             int dirListSize = this.directionList.size();
-            
+
             return (this.directionList.get(dirListSize - 1));
         }
     }
@@ -492,28 +490,96 @@ public class SubGame implements Serializable {
     public Player getAfterSkipPlayer(Player currentPlayer) {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         Player afterSkipPlayer;
-        
+
         afterSkipPlayer = getPlayerAfterNextPlayerIsSkipped(currentPlayer);
-        
+
         return afterSkipPlayer;
     }
-    
+
     public Player getAfterDraw2Player(Player currentPlayer) {
         Player afterDraw2Player;
-        
+
         afterDraw2Player = getPlayerAfterNextPlayerIsSkipped(currentPlayer);
-        
+
         return afterDraw2Player;
     }
-    
+
     private Player getPlayerAfterNextPlayerIsSkipped(Player currentPlayer) {
         Player afterSkippedPlayer, privNextPlayer;
-        
+
         privNextPlayer = getNextPlayer(currentPlayer);
-        
+
         afterSkippedPlayer = getNextPlayer(privNextPlayer);
-        
+
         return afterSkippedPlayer;
+    }
+
+    public Player getPlayerFromUserObject(User aUser) {
+        for (Player aPlayer : this.subGamePlayers) {
+            if (aPlayer.getPlayer() == aUser) {
+                return aPlayer;
+            }
+        }
+
+        return null;
+    }
+
+    public Player processCardPlayedAndGetNextPlayer(Card chosenCard) {
+        Player nextPlayer = null, normalNextPlayer, privCurrentPlayer;
+        Direction currentDirection;
+        
+        currentDirection = this.getLastDirection();
+        
+        privCurrentPlayer = this.currentPlayer;
+        normalNextPlayer = this.getNextPlayer(privCurrentPlayer);
+        
+        switch (chosenCard.getCardAction()) {
+            case NUMBER:
+                // normal operation
+                this.directionList.add(currentDirection);
+                nextPlayer = normalNextPlayer;
+                break;
+            case SKIP:
+                // skip the next player
+                this.directionList.add(currentDirection);
+                nextPlayer = this.getAfterSkipPlayer(privCurrentPlayer);
+                break;
+            case REVERSE:
+                // reverse direction
+                if(currentDirection.equals(Direction.CLOCKWISE))
+                    this.directionList.add(Direction.ANTICLOCKWISE);
+                else
+                    this.directionList.add(Direction.CLOCKWISE);
+                // get new next player after direction change
+                nextPlayer = this.getNextPlayer(this.currentPlayer);
+                break;
+            case DRAW2:
+                this.directionList.add(currentDirection);
+                // give next player 2 cards from drawPile
+                this.givePlayer2Cards(normalNextPlayer);
+                // skip next player
+                nextPlayer = this.getNextPlayer(normalNextPlayer);
+                break;
+            case WILD: // unfinished
+                // currentPlayer have to choose amongst the 4 colours
+                // next player has to play a card from that colour or Wild or WildDraw4
+                this.directionList.add(currentDirection);
+                nextPlayer = normalNextPlayer;
+                break;
+            case WILD_DRAW4: // unfinished
+                // give next player 4 cards from drawPile
+                // skip next player
+                // currentPlayer have to choose amongst the 4 colours
+                // next player has to play a card from that colour or Wild or WildDraw4
+                this.directionList.add(currentDirection);
+                nextPlayer = normalNextPlayer;
+                break;
+            default:
+                System.out.println("### Error: Unknown switchAction");
+                break;
+        }
+
+        return nextPlayer;
     }
 
     @Override

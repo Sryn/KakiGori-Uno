@@ -9,6 +9,7 @@ package utilities;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Random;
+import models.Card;
 
 /**
  *
@@ -109,4 +110,49 @@ public final class Utilities {
 
         return cardFileName;
     }
+    
+    public static boolean pairOfCardMatchDeterminator(Card card1, Card card2) {
+        
+        Boolean matchColour, matchAction, matchValue = false;
+        
+        Card.Colour card1Colour, card2Colour;
+        Card.Action card1Action, card2Action;
+        Integer card1Value, card2Value;
+        
+        card1Colour = card1.getCardColour();
+        card2Colour = card2.getCardColour();
+        
+        card1Action = card1.getCardAction();
+        card2Action = card2.getCardAction();
+        
+        card1Value = card1.getCardValue();
+        card2Value = card2.getCardValue();
+        
+        if(card1Colour.equals(Card.Colour.BLACK) || card2Colour.equals(Card.Colour.BLACK))
+            matchColour = true;
+        else if(card1Colour.equals(card2Colour))
+            matchColour = true;
+        else
+            matchColour = false;
+        
+        if(card1Action.equals(Card.Action.WILD) || card1Action.equals(Card.Action.WILD_DRAW4))
+            matchAction = true;
+        else if(card2Action.equals(Card.Action.WILD) || card2Action.equals(Card.Action.WILD_DRAW4))
+            matchAction = true;
+        else if(card1Action.equals(Card.Action.NUMBER) || card2Action.equals(Card.Action.NUMBER))
+            matchAction = false;
+        else if(card1Action.equals(card2Action))
+            matchAction = true;
+        else
+            matchAction = false;
+        
+        if(card1Action.equals(Card.Action.NUMBER) && card2Action.equals(Card.Action.NUMBER))
+            if(card1Value.equals(card2Value))
+                matchValue = true;
+        else
+                matchValue = false;
+        
+        return (matchColour || matchAction || matchValue); // returns true is any one is true
+    }
+    
 }

@@ -8,6 +8,7 @@ package models;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -87,6 +88,11 @@ public class CardList implements Serializable {
         return this.listOfCards.add(card);
     }
 
+    public void addCardToTop(Card card) {
+//        return this.listOfCards.add(card);
+        this.listOfCards.add(0, card);
+    }
+
     public Boolean removeCard(Card card) {
         return this.listOfCards.remove(card);
     }
@@ -124,6 +130,14 @@ public class CardList implements Serializable {
             return null;
         else
             return this.listOfCards.get(0);
+    }
+    
+    public Card getCardById(Long cardId) {
+        for(Card aCard: this.listOfCards) {
+            if(Objects.equals(aCard.getCardId(), cardId))
+                return aCard;
+        }
+        return null;
     }
 
     @Override

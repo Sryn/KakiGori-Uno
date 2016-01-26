@@ -107,12 +107,14 @@ public class JoinGameServlet extends HttpServlet {
         } else if(null != session.getAttribute("mapGameId")) {
             strMapGameId = session.getAttribute("mapGameId").toString();
             System.out.println(">>> from session strMapGameId = " + strMapGameId);
-        } else {
+//        } else {
+        }
             // somehow the radio button in lounge deactivated (after 5 secs)
             //  right when the loginUser pressed the button
             // therefore, go back to lounge
+        if(null == strMapGameId)
             req.getRequestDispatcher("lounge.jsp").forward(req, resp);
-        }
+//        }
         Long lonMapGameId = Long.valueOf(strMapGameId);
 //        String strMapTableNo = getIntOfSumOfLongDigits(lonMapGameId).toString();
         session.setAttribute("mapGameId", lonMapGameId);
@@ -159,7 +161,7 @@ public class JoinGameServlet extends HttpServlet {
         } else {
             // Set refresh, autoload time as 5 seconds
 //            req.setAttribute("mapGameId", strMapGameId);
-            resp.setHeader("Refresh", "5");
+            resp.setHeader("Refresh", "5; joinGame");
         }
 
         String trPlayerList = "";

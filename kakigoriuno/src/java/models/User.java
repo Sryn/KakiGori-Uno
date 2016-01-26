@@ -22,6 +22,7 @@ public class User implements Serializable {
         this.email = email;
         this.password = password;
         this.points = points;
+        this.intForRandomAvatar = getRandomInt(1, 16);
     }
 
     public User() {

@@ -88,6 +88,27 @@ public class Player implements Serializable {
     public void setPlayerStatus(PlayerStatus playerStatus) {
         this.playerStatus = playerStatus;
     }
+    
+    public int countHowManyMatchingCards(Card currentDiscardPileTopCard) {
+        int count = 0;
+        
+        for(Card aCard: this.hand.getListOfCards()) {
+            if(pairOfCardMatchDeterminator(aCard, currentDiscardPileTopCard))
+                count++;
+        }
+        
+        return count;
+    }
+    
+    public int addUpHandPoints() {
+        int points = 0;
+        
+        for(Card aCard: this.hand.getListOfCards()) {
+            points += aCard.getCardPoints();
+        }
+        
+        return points;
+    }
 
     @Override
     public int hashCode() {

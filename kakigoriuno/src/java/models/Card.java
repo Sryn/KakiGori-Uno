@@ -316,7 +316,7 @@ public class Card implements Serializable {
     public void setImgFileName(String imgFileName) {
         this.imgFileName = imgFileName;
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 0;
