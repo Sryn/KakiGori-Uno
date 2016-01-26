@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
+import models.Card.Colour;
 import models.CardList.CardListType;
 import static utilities.Utilities.*;
 
@@ -89,11 +90,11 @@ public class Player implements Serializable {
         this.playerStatus = playerStatus;
     }
     
-    public int countHowManyMatchingCards(Card currentDiscardPileTopCard) {
+    public int countHowManyMatchingCards(CardList discardPile, Colour validColour) {
         int count = 0;
         
         for(Card aCard: this.hand.getListOfCards()) {
-            if(pairOfCardMatchDeterminator(aCard, currentDiscardPileTopCard))
+            if(pairOfCardMatchDeterminator(aCard, discardPile, validColour))
                 count++;
         }
         

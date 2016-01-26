@@ -8,8 +8,11 @@ package utilities;
 //import javax.servlet.http.HttpServlet;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Random;
 import models.Card;
+import models.Card.Colour;
+import models.CardList;
 
 /**
  *
@@ -111,43 +114,45 @@ public final class Utilities {
         return cardFileName;
     }
     
-    public static boolean pairOfCardMatchDeterminator(Card card1, Card card2) {
+    public static boolean pairOfCardMatchDeterminator(Card playerCard, CardList discardPile, Colour validColour) {
+        
+        Card discardTopCard = discardPile.getTopCard();
         
         Boolean matchColour, matchAction, matchValue = false;
         
-        Card.Colour card1Colour, card2Colour;
-        Card.Action card1Action, card2Action;
-        Integer card1Value, card2Value;
+        Card.Colour playerCardColour;
+        Card.Action playerCardAction, discardTopCardAction;
+        Integer playerCardValue, discardTopCardValue;
         
-        card1Colour = card1.getCardColour();
-        card2Colour = card2.getCardColour();
+        playerCardColour = playerCard.getCardColour();
+//        validColour = discardTopCard.getCardColour();
         
-        card1Action = card1.getCardAction();
-        card2Action = card2.getCardAction();
+        playerCardAction = playerCard.getCardAction();
+        discardTopCardAction = discardTopCard.getCardAction();
         
-        card1Value = card1.getCardValue();
-        card2Value = card2.getCardValue();
+        playerCardValue = playerCard.getCardValue();
+        discardTopCardValue = discardTopCard.getCardValue();
         
-        if(card1Colour.equals(Card.Colour.BLACK) || card2Colour.equals(Card.Colour.BLACK))
+        if(playerCardColour.equals(Card.Colour.BLACK))
             matchColour = true;
-        else if(card1Colour.equals(card2Colour))
+        else if(playerCardColour.equals(validColour))
             matchColour = true;
         else
             matchColour = false;
         
-        if(card1Action.equals(Card.Action.WILD) || card1Action.equals(Card.Action.WILD_DRAW4))
+        if(playerCardAction.equals(Card.Action.WILD) || playerCardAction.equals(Card.Action.WILD_DRAW4))
             matchAction = true;
-        else if(card2Action.equals(Card.Action.WILD) || card2Action.equals(Card.Action.WILD_DRAW4))
-            matchAction = true;
-        else if(card1Action.equals(Card.Action.NUMBER) || card2Action.equals(Card.Action.NUMBER))
+//        else if(discardTopCardAction.equals(Card.Action.WILD) || discardTopCardAction.equals(Card.Action.WILD_DRAW4))
+//            matchAction = true;
+        else if(playerCardAction.equals(Card.Action.NUMBER) || discardTopCardAction.equals(Card.Action.NUMBER))
             matchAction = false;
-        else if(card1Action.equals(card2Action))
+        else if(playerCardAction.equals(discardTopCardAction))
             matchAction = true;
         else
             matchAction = false;
         
-        if(card1Action.equals(Card.Action.NUMBER) && card2Action.equals(Card.Action.NUMBER))
-            if(card1Value.equals(card2Value))
+        if(playerCardAction.equals(Card.Action.NUMBER) && discardTopCardAction.equals(Card.Action.NUMBER))
+            if(playerCardValue.equals(discardTopCardValue))
                 matchValue = true;
         else
                 matchValue = false;

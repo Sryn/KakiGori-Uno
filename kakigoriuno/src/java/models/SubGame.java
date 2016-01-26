@@ -19,6 +19,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import models.Card.Colour;
 import models.CardList.CardListType;
 import static utilities.Utilities.*;
 
@@ -60,6 +61,8 @@ public class SubGame implements Serializable {
     }
 
     private List<Direction> directionList; // clockwise=ascending-index, anti-clockwise=descending-index
+    
+    private List<Colour> colourList;
 
     private int roundNo; // current game round number
 
@@ -86,6 +89,7 @@ public class SubGame implements Serializable {
         this.drawPile = new CardList(CardListType.DRAWPILE);
         this.discardPile = new CardList(CardListType.DISCARDPILE);
         this.directionList = new ArrayList();
+        this.colourList = new ArrayList();
         this.roundNo = roundNo;
         this.setupSubGame();
     }
@@ -182,6 +186,14 @@ public class SubGame implements Serializable {
 
     public void setDirectionList(List<Direction> directionList) {
         this.directionList = directionList;
+    }
+
+    public List<Colour> getColourList() {
+        return colourList;
+    }
+
+    public void setColourList(List<Colour> colourList) {
+        this.colourList = colourList;
     }
 
     public void setupSubGame() {
@@ -486,6 +498,16 @@ public class SubGame implements Serializable {
         }
     }
 
+    public Colour getLastColour() {
+        if (this.colourList.isEmpty()) {
+            return null;
+        } else {
+            int colListSize = this.colourList.size();
+
+            return (this.colourList.get(colListSize - 1));
+        }
+    }
+
     public Player getAfterSkipPlayer(Player currentPlayer) {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         Player afterSkipPlayer;
@@ -523,24 +545,47 @@ public class SubGame implements Serializable {
         return null;
     }
 
-    public Player processCardPlayedAndGetNextPlayer(Card chosenCard) {
+    public Player processCardPlayedAndGetNextPlayer(Card chosenCard, String colourChoice) {
         Player nextPlayer = null, normalNextPlayer, privCurrentPlayer;
         Direction currentDirection;
+        Colour chosenColour, chosenCardColour;
         
         currentDirection = this.getLastDirection();
         
         privCurrentPlayer = this.currentPlayer;
         normalNextPlayer = this.getNextPlayer(privCurrentPlayer);
         
+        chosenCardColour = chosenCard.getCardColour();
+        
+        switch(colourChoice) {
+            case "red": 
+                chosenColour = Colour.RED;
+                break;
+            case "yellow":
+                chosenColour = Colour.YELLOW;
+                break;
+            case "green":
+                chosenColour = Colour.GREEN;
+                break;
+            case "blue":
+                chosenColour = Colour.BLUE;
+                break;
+            default: 
+                chosenColour = null;
+                break;
+        }
+        
         switch (chosenCard.getCardAction()) {
             case NUMBER:
                 // normal operation
                 this.directionList.add(currentDirection);
+                this.colourList.add(chosenCardColour);
                 nextPlayer = normalNextPlayer;
                 break;
             case SKIP:
                 // skip the next player
                 this.directionList.add(currentDirection);
+                this.colourList.add(chosenCardColour);
                 nextPlayer = this.getAfterSkipPlayer(privCurrentPlayer);
                 break;
             case REVERSE:
@@ -549,6 +594,7 @@ public class SubGame implements Serializable {
                     this.directionList.add(Direction.ANTICLOCKWISE);
                 else
                     this.directionList.add(Direction.CLOCKWISE);
+                this.colourList.add(chosenCardColour);
                 // there's a special case in a two-players subGame/round where a reverse is like a skip
                 if(this.getSubGamePlayers().size() == 2)
                     // play returns to the currentPlayer
@@ -560,24 +606,28 @@ public class SubGame implements Serializable {
                 break;
             case DRAW2:
                 this.directionList.add(currentDirection);
+                this.colourList.add(chosenCardColour);
                 // give next player 2 cards from drawPile
                 this.givePlayer2Cards(normalNextPlayer);
                 // skip next player
                 nextPlayer = this.getNextPlayer(normalNextPlayer);
                 break;
             case WILD: // unfinished
-                // currentPlayer have to choose amongst the 4 colours
-                // next player has to play a card from that colour or Wild or WildDraw4
                 this.directionList.add(currentDirection);
+                // currentPlayer have to choose amongst the 4 colours
+                this.colourList.add(chosenColour);
+                // next player has to play a card from that colour or Wild or WildDraw4
                 nextPlayer = normalNextPlayer;
                 break;
             case WILD_DRAW4: // unfinished
-                // give next player 4 cards from drawPile
-                // skip next player
-                // currentPlayer have to choose amongst the 4 colours
-                // next player has to play a card from that colour or Wild or WildDraw4
                 this.directionList.add(currentDirection);
-                nextPlayer = normalNextPlayer;
+                // currentPlayer have to choose amongst the 4 colours
+                this.colourList.add(chosenColour);
+                // give next player 4 cards from drawPile
+                this.givePlayer4Cards(normalNextPlayer);
+                // skip next player
+                nextPlayer = this.getNextPlayer(normalNextPlayer);
+                // next player has to play a card from that colour or Wild or WildDraw4
                 break;
             default:
                 System.out.println("### Error: Unknown switchAction");

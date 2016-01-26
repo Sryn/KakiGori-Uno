@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.Card;
+import models.Card.Colour;
 import models.Game;
 import models.Game.GameStyle;
 import models.GamesMap;
@@ -49,13 +50,14 @@ public class playCard extends HttpServlet {
         HttpSession session = req.getSession();
 
         int currentPoints;
-        String strMapGameId;
+        String strMapGameId, colourChoice;
         Long lonMapGameId;
         Game currentGame;
         SubGame currentSubGame;
         Player currentLoginPlayer, nextPlayer;
         Boolean doDraw = true, loadError = false;
         Card chosenCard = null, discardPileTopCard;
+        Colour validColour;
 
         User loginUser = (User) session.getAttribute("loginuser");
         strMapGameId = (String) session.getAttribute("mapGameId");
@@ -65,7 +67,9 @@ public class playCard extends HttpServlet {
         currentLoginPlayer = currentSubGame.getPlayerFromUserObject(loginUser);
 
         System.out.println(">>> In playCard with cardChoice = " + req.getParameter("cardChoice")
-                + " and reqPar adcfdp=" + req.getParameter("adcfdp") + " with Player " + currentLoginPlayer.getPlayer().getUsername());
+                + " and reqPar adcfdp=" + req.getParameter("adcfdp") 
+                + " and colourChoice=" + req.getParameter("colourChoice")                 
+                + " with Player " + currentLoginPlayer.getPlayer().getUsername());
 
         if (null == req.getParameter("cardChoice")) {
             // no choice made so go back
@@ -76,12 +80,15 @@ public class playCard extends HttpServlet {
             System.out.println(">>> In playCard with cardChoice = " + chosenCard.getCardName());
         }
 
+        colourChoice = req.getParameter("colourChoice");
+        validColour = currentSubGame.getLastColour();
+                
         discardPileTopCard = currentSubGame.getDiscardPile().getTopCard();
 
         if (chosenCard != null && discardPileTopCard != null) {
             loadError = true;
             
-            if (pairOfCardMatchDeterminator(chosenCard, discardPileTopCard)) {
+            if (pairOfCardMatchDeterminator(chosenCard, currentSubGame.getDiscardPile(), validColour)) {
                 loadError = false;
                                 
                 // remove chosenCard from loginPlayer hand
@@ -130,7 +137,7 @@ public class playCard extends HttpServlet {
                     req.getRequestDispatcher("joinGame").forward(req, resp);
                 } else {
                     // process consequences of the chosenCard and get nextPlayer
-                    nextPlayer = currentSubGame.processCardPlayedAndGetNextPlayer(chosenCard); // .getNextPlayer(currentLoginPlayer);
+                    nextPlayer = currentSubGame.processCardPlayedAndGetNextPlayer(chosenCard, colourChoice); // .getNextPlayer(currentLoginPlayer);
                     
 //                // set nextPlayer as new currentPlayer
                     currentSubGame.setCurrentPlayer(nextPlayer);

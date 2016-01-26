@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.*;
 import models.Card.Action;
+import models.Card.Colour;
 import models.SubGame.Direction;
 //import models.Card;
 //import models.CardList;
@@ -99,6 +100,8 @@ public class StartGameServlet extends HttpServlet {
                 roundNo = currentGame.getSubGameList().size() + 1;
                 listSubGameRounds = currentGame.getSubGameList();
             }
+            
+            System.out.println(">> startGame roundNo=" + roundNo);
             
             // check if new round has been prepared, if not, prepare new round
             if (listSubGameRounds.size() < roundNo) {
@@ -188,8 +191,11 @@ public class StartGameServlet extends HttpServlet {
                                 
                 if(null != currentSubGame.getDiscardPile().getTopCard()) {
                     firstDiscardCard = currentSubGame.getDiscardPile().getTopCard();
+                    Colour discardCardColour = firstDiscardCard.getCardColour();
                     Action switchAction = firstDiscardCard.getCardAction();
                     Player lastPlayer = currentSubGame.getLastPlayer();
+                    
+                    currentSubGame.getColourList().add(discardCardColour);
                     
                     switch(switchAction) {
                         case REVERSE:

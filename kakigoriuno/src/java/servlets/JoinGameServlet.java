@@ -58,7 +58,7 @@ public class JoinGameServlet extends HttpServlet {
 
         loginUser = (User) session.getAttribute("loginuser");
         loginUserName = loginUser.getUsername();
-        System.out.println(">>> loginUser=" + loginUser.toString());
+//        System.out.println(">>> loginUser=" + loginUser.toString());
         /*
         if (null == req.getParameter("gameId")) {
             // not a gameList gameId
@@ -108,10 +108,10 @@ public class JoinGameServlet extends HttpServlet {
          */
         if (null == session.getAttribute("mapGameId")) {
             strMapGameId = req.getParameter("mapGameId");
-            System.out.println(">>> from req strMapGameId = " + strMapGameId);
+//            System.out.println(">>> from req strMapGameId = " + strMapGameId);
         } else if(null != session.getAttribute("mapGameId")) {
             strMapGameId = session.getAttribute("mapGameId").toString();
-            System.out.println(">>> from session strMapGameId = " + strMapGameId);
+//            System.out.println(">>> from session strMapGameId = " + strMapGameId);
 //        } else {
         }
             // somehow the radio button in lounge deactivated (after 5 secs)
@@ -127,8 +127,8 @@ public class JoinGameServlet extends HttpServlet {
         currentGame2 = gamesMap.get(lonMapGameId);
         String gameInstanceName = currentGame2.toString();
         gameInstanceName = gameInstanceName.substring(12);
-        System.out.println(">>> currentGame2 = " + currentGame2.toString() + " - " + gameInstanceName);
-        System.out.println(">> currentGame2 = " + currentGame2);
+//        System.out.println(">>> currentGame2 = " + currentGame2.toString() + " - " + gameInstanceName);
+//        System.out.println(">> currentGame2 = " + currentGame2);
 
         String strMapTableNo = currentGame2.getGameName();
         TableNo = strMapTableNo;
@@ -154,7 +154,7 @@ public class JoinGameServlet extends HttpServlet {
             }
         }
 
-        System.out.println(">> outside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
+//        System.out.println(">> outside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
         if (currentGame2.isStarted()) {
             System.out.println(">>  inside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
 //            req.setAttribute("mapGameId", strMapGameId);
@@ -237,7 +237,7 @@ public class JoinGameServlet extends HttpServlet {
             startGameBtnVisibility = "";
         }
 
-        System.out.println(">>> mapGameId: " + strMapGameId + " NoOfPlayers=" + gamesMap.get(lonMapGameId).getGamePlayers().size());
+//        System.out.println(">>> mapGameId: " + strMapGameId + " NoOfPlayers=" + gamesMap.get(lonMapGameId).getGamePlayers().size());
 
         // Set resp content type
         resp.setContentType("text/html");

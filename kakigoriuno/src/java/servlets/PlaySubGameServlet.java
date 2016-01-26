@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.inject.Inject;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import models.*;
+import models.Card.Colour;
 import models.SubGame.Direction;
 //import models.CardList;
 //import models.Game;
@@ -54,6 +56,8 @@ public class PlaySubGameServlet extends HttpServlet {
         SubGame currentSubGame;
         Player turnPlayer = null, loginPlayer, currentPlayer = null;
         Card topDiscardPileCard = null;
+        Colour validColour;
+        CardList discardPile;
 
         String strMapGameId, strGameName, loginUserName;
         String strRoundNo = "X";
@@ -138,14 +142,16 @@ public class PlaySubGameServlet extends HttpServlet {
             currentSubGamePlayers = currentSubGame.getSubGamePlayers();
             roundNo = currentSubGame.getRoundNo();
             turnPlayer = currentSubGame.getCurrentPlayer();
+            discardPile = currentSubGame.getDiscardPile();
             drawPileCount = currentSubGame.getDrawPile().size();
-            discardPileCount = currentSubGame.getDiscardPile().size();
+            discardPileCount = discardPile.size();
             topDiscardPileCard = currentSubGame.getDiscardPile().getTopCard();
             loginPlayer = currentSubGame.getPlayerFromUserObject(loginUser);
             loginPlayerIdx = currentSubGame.getSubGamePlayers().indexOf(loginPlayer);
             loginPlayerTurn = currentSubGame.getCurrentPlayer().equals(loginPlayer);
             currentPlayer = currentSubGame.getCurrentPlayer();
-            matchingCardsCount = loginPlayer.countHowManyMatchingCards(topDiscardPileCard);
+            validColour = currentSubGame.getLastColour();
+            matchingCardsCount = loginPlayer.countHowManyMatchingCards(discardPile, validColour);
             addUpHandPoints = loginPlayer.addUpHandPoints();
             roundMoveNo = currentSubGame.getDirectionList().size();
         }
@@ -211,7 +217,7 @@ public class PlaySubGameServlet extends HttpServlet {
                 + getDiscardPileCell(discardPileCount, topDiscardPileCard)
                 + "</tr>\n"
                 // loginPlayer hand row 1
-                + getHandRow(loginPlayerIdx, currentSubGame, topDiscardPileCard)
+                + getHandRow(loginPlayerIdx, currentSubGame)
                 + "<input type=\"hidden\" name=\"adcfdp\" value=\"" 
                 + afterDrawingCardFromDrawPile + "\">" // to use if playCard was made without a cardChoice
                 + "</table><br>\n"
@@ -241,13 +247,41 @@ public class PlaySubGameServlet extends HttpServlet {
     }
     
     private String getColourOptions() {
-        String rtnString = "";
-        
-        rtnString = rtnString.concat("");
-        rtnString = rtnString.concat("");
-        rtnString = rtnString.concat("");
-        rtnString = rtnString.concat("");
-        rtnString = rtnString.concat("");
+        int randInt = ThreadLocalRandom.current().nextInt(1, 5);
+        String rtnString = "<h4>Choose a colour below for Wild or Wild + Draw4 cards you play:<h4>\n";
+
+        rtnString = rtnString.concat("<table border=\"1\">\n");
+        rtnString = rtnString.concat("<tr>\n");
+        rtnString = rtnString.concat("<td align=\"center\" style=\"background-color:Red; color:yellow\">\n");
+        rtnString = rtnString.concat("RED - ");
+        rtnString = rtnString.concat("<input type=\"radio\" name=colourChoice value=\"red\" "); //>");
+        if(randInt == 1)
+            rtnString = rtnString.concat("checked=\"checked\"");
+        rtnString = rtnString.concat(">");
+        rtnString = rtnString.concat("</td>");
+        rtnString = rtnString.concat("<td align=\"center\" style=\"background-color:Yellow; color:red\">\n");
+        rtnString = rtnString.concat("YELLOW - ");
+        rtnString = rtnString.concat("<input type=\"radio\" name=colourChoice value=\"yellow\" ");
+        if(randInt == 2)
+            rtnString = rtnString.concat("checked=\"checked\"");
+        rtnString = rtnString.concat(">");
+        rtnString = rtnString.concat("</td>");
+        rtnString = rtnString.concat("<td align=\"center\" style=\"background-color:Green; color:white\">\n");
+        rtnString = rtnString.concat("GREEN - ");
+        rtnString = rtnString.concat("<input type=\"radio\" name=colourChoice value=\"green\" ");
+        if(randInt == 3)
+            rtnString = rtnString.concat("checked=\"checked\"");
+        rtnString = rtnString.concat(">");
+        rtnString = rtnString.concat("</td>");
+        rtnString = rtnString.concat("<td align=\"center\" style=\"background-color:Blue; color:white\">\n");
+        rtnString = rtnString.concat("BLUE - ");
+        rtnString = rtnString.concat("<input type=\"radio\" name=colourChoice value=\"blue\" ");
+        if(randInt == 4)
+            rtnString = rtnString.concat("checked=\"checked\"");
+        rtnString = rtnString.concat(">");
+        rtnString = rtnString.concat("</td>");
+        rtnString = rtnString.concat("</tr>\n");
+        rtnString = rtnString.concat("</table><br>\n");
         
         return rtnString;
     }
@@ -297,13 +331,16 @@ public class PlaySubGameServlet extends HttpServlet {
         return playOrDrawCardBtnVisibility;
     }
 
-    public String getHandRow(int loginPlayerIdx, SubGame currentSubGame, Card topDiscardPileCard) {
+    public String getHandRow(int loginPlayerIdx, SubGame currentSubGame) {
         int i, cardCount = 0, cellCount = 0; // intRandHandCardCount = getRandomInt(1, 15);
         String strHttpHandRow = "";
         strHttpHandRow = strHttpHandRow.concat("<tr>\n");
         CardList loginPlayerHand = currentSubGame.getSubGamePlayers().get(loginPlayerIdx).getHand();
+        CardList discardPile = currentSubGame.getDiscardPile();
         cardCount = loginPlayerHand.size();
         Boolean loginPlayerTurn = false;
+        Colour validColour = currentSubGame.getLastColour();
+        
         if(currentSubGame.getSubGamePlayers().indexOf(currentSubGame.getCurrentPlayer()) == loginPlayerIdx)
             loginPlayerTurn = true;
         
@@ -322,7 +359,7 @@ public class PlaySubGameServlet extends HttpServlet {
 //                strHttpHandRow = strHttpHandRow.concat("<td align=\"center\"><table border=\"1\">\n<tr><td align=\"center\">");
                 strHttpHandRow = strHttpHandRow.concat("<td align=\"center\""); //><table>\n<tr><td align=\"center\">");
 //                if((loginPlayerTurn) && ((currCardColour == matchColour) || (Objects.equals(currCardValue, matchValue))))
-                if(loginPlayerTurn && pairOfCardMatchDeterminator(topDiscardPileCard, loginPlayerHand.getListOfCards().get(i)))
+                if(loginPlayerTurn && pairOfCardMatchDeterminator(loginPlayerHand.getListOfCards().get(i), discardPile, validColour))
                     strHttpHandRow = strHttpHandRow.concat(" style=\"background-color:LimeGreen\"");
                 strHttpHandRow = strHttpHandRow.concat("><table>\n<tr><td align=\"center\">");
     //            strHttpHandRow = strHttpHandRow.concat("<img src=\"images\\uno_deck\\" + getRandomUnoCardFileName() + "\" width=\"85\" height=\"128\" alt=\"Player's Hand Card No. " + i + " Face\">");
@@ -332,7 +369,7 @@ public class PlaySubGameServlet extends HttpServlet {
                         + loginPlayerHand.getListOfCards().get(i).getCardName() + "\">");
                 strHttpHandRow = strHttpHandRow.concat("</td></tr><tr><td align=\"center\">");
                 strHttpHandRow = strHttpHandRow.concat(loginPlayerHand.getListOfCards().get(i).getCardName());
-                if(loginPlayerTurn && pairOfCardMatchDeterminator(topDiscardPileCard, loginPlayerHand.getListOfCards().get(i))) {
+                if(loginPlayerTurn && pairOfCardMatchDeterminator(loginPlayerHand.getListOfCards().get(i), discardPile, validColour)) {
                     // if this card is wild or wild_draw4, offer a choice of colours
                     if (false) { // card is wild or wild_draw4
                         getChooseColourButton();
