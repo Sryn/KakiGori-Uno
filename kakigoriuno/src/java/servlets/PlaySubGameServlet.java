@@ -46,7 +46,7 @@ public class PlaySubGameServlet extends HttpServlet {
         Long lonMapGameId;
         int i, roundNo = 0, roundMoveNo = 1
                 , drawPileCount = 0, discardPileCount = 0, loginPlayerIdx = 0
-                , matchingCardsCount = 0, addUpHandPoints = 0;
+                , matchingCardsCount = 0, addUpHandPoints = 0, refreshSecs = 7;
         Boolean loadError = false
                 , afterDrawingCardFromDrawPile = false
                 , loginPlayerTurn = false; // adcfdp
@@ -162,11 +162,17 @@ public class PlaySubGameServlet extends HttpServlet {
             resp.setHeader("Refresh", "0; startGame");            
         }
 
+//        String refreshString = "Refresh\", \"5; playSubGame?adcfdp=";
+        
         // Set refresh, autoload time as 5 seconds
         if(afterDrawingCardFromDrawPile) {
-            resp.setHeader("Refresh", "5; playSubGame?adcfdp=true");        
+//            refreshString = refreshString.concat("true");
+            resp.setHeader("Refresh", "7; playSubGame?adcfdp=true");     
+//            resp.setHeader("Refresh", refreshString);
         } else {
-            resp.setHeader("Refresh", "5; playSubGame?adcfdp=false");
+//            refreshString = refreshString.concat("false");
+            resp.setHeader("Refresh", "7; playSubGame?adcfdp=false");
+//            resp.setHeader("Refresh", refreshString);
         }
 
         // Set resp content type
