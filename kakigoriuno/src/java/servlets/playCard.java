@@ -68,7 +68,9 @@ public class playCard extends HttpServlet {
 
         System.out.println(">>> In playCard with cardChoice = " + req.getParameter("cardChoice")
                 + " and reqPar adcfdp=" + req.getParameter("adcfdp") 
-                + " and colourChoice=" + req.getParameter("colourChoice")                 
+                // colourChoice comes from the user or randomly selected row 
+                // above the play card button in playSubGame
+                + " and colourChoice=" + req.getParameter("colourChoice") 
                 + " with Player " + currentLoginPlayer.getPlayer().getUsername());
 
         if (null == req.getParameter("cardChoice")) {

@@ -68,13 +68,14 @@ public class PlaySubGameServlet extends HttpServlet {
         loginUserName = loginUser.getUsername();
 
         strMapGameId = (String) session.getAttribute("mapGameId");
-        System.out.println("> loginUser=" + loginUserName + "\t sesAtt mapGameId=" + strMapGameId);
+//        System.out.println("> playSubGame loginUser=" + loginUserName + "\t sesAtt mapGameId=" + strMapGameId);
 
         lonMapGameId = Long.valueOf(strMapGameId);
         currentGame = gamesMap.get(lonMapGameId);
         strGameName = currentGame.getGameName();
 
         currentSubGame = currentGame.getCurrentSubGame();
+        System.out.println("> playSubGame loginUser=" + loginUserName + "\t currentSubGame=" + currentSubGame.toString());
         /*
         if(null != req.getAttribute("doDraw")) { // from returned drawCard & from skipTurn
             if(req.getAttribute("doDraw").equals("true"))
@@ -102,7 +103,7 @@ public class PlaySubGameServlet extends HttpServlet {
             } else if(req.getParameter("adcfdp").equals("false")) {
                 afterDrawingCardFromDrawPile = false;
             } else {
-                System.out.println("### ERROR: req.getParameter(\"adcfdp\") = " + req.getParameter("adcfdp"));
+                System.out.println("### playSubGame " + loginUserName + " ERROR: req.getParameter(\"adcfdp\") = " + req.getParameter("adcfdp"));
             }
             System.out.println(">>> req.getParameter(\"adcfdp\") = " + req.getParameter("adcfdp"));
         } else if(null != req.getAttribute("adcfdp")) { // from returned playCard
@@ -121,8 +122,8 @@ public class PlaySubGameServlet extends HttpServlet {
 //            if(afterDrawingCardFromDrawPile)
 //                resp.setHeader("doDraw", afterDrawingCardFromDrawPile.toString());
             // there's neither adcfdp in attribute nor parameter, so assume adcfdp is false
-            System.out.println("### ERROR: req.getParameter(\"adcfdp\") = " + req.getParameter("adcfdp"));
-            System.out.println("### ERROR: req.getAttribute(\"adcfdp\") = " + req.getAttribute("adcfdp"));
+            System.out.println("### playSubGame " + loginUserName + " ERROR: req.getParameter(\"adcfdp\") = " + req.getParameter("adcfdp"));
+            System.out.println("### playSubGame " + loginUserName + " ERROR: req.getAttribute(\"adcfdp\") = " + req.getAttribute("adcfdp"));
             afterDrawingCardFromDrawPile = false;
         }
         
@@ -159,7 +160,8 @@ public class PlaySubGameServlet extends HttpServlet {
         if(loadError) {
             System.out.println("### Error currentSubGame=" + currentSubGame.toString());
             System.out.println("### Error currentSubGamePlayers=" + currentSubGame.getSubGamePlayers().toString());
-            resp.setHeader("Refresh", "0; startGame");            
+//            resp.setHeader("Refresh", "0; startGame");            
+            req.getRequestDispatcher("startGame").forward(req, resp);
         }
 
 //        String refreshString = "Refresh\", \"5; playSubGame?adcfdp=";

@@ -7,6 +7,7 @@ package models;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.persistence.Entity;
@@ -112,13 +113,17 @@ public class CardList implements Serializable {
         // with the Card B being a randomly chosen card
         // note that a card may be swapped more than once
         // and a card may actually be finally swapped right back into its original position
-        for (int i = 0; i < this.listOfCards.size(); i++) {
+        /* Apparently, this code of mine doesn't work.  Produce more than 2 cards for some card types */
+/*        for (int i = 0; i < this.listOfCards.size(); i++) {
             tempCard = this.listOfCards.remove(i); // remove Card A
             randomInt = ThreadLocalRandom.current().nextInt(0, this.listOfCards.size()); // choose a random index for Card B
             this.listOfCards.add(i, this.listOfCards.get(randomInt)); // put a copy of Card B in A's previous position
             this.listOfCards.remove(randomInt + 1); // remove original card B, since the card has shifted right by 1
             this.listOfCards.add(randomInt + 1, tempCard); // place back Card A into B's original position, need the +1 else it'll be a three cards swap
         }
+*/        
+        Collections.shuffle(this.listOfCards);
+        
     }
     
     public int size() {

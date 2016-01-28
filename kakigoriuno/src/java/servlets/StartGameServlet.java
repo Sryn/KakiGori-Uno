@@ -80,9 +80,6 @@ public class StartGameServlet extends HttpServlet {
         System.out.println(">>>> current game started: " + currentGame);
         if ((currGameNoOfPlayers > 1) && (currGameNoOfPlayers <= 10)) {
             System.out.println(">> before change mapGameId=" + strMapGameId + " status=" + currentGame.getGameStatus());
-            if (currentGame.isWaiting()) {
-                currentGame.startGame();
-            }
 
             // to make new subGame
             // automatically do setup process once a player has
@@ -105,6 +102,9 @@ public class StartGameServlet extends HttpServlet {
             
             // check if new round has been prepared, if not, prepare new round
             if (listSubGameRounds.size() < roundNo) {
+                
+                Player previousSubRoundWinner = null;
+                
                 // get gamePlayers list from Game and populate subGamePlayers list
                 List<Player> newRoundPlayers = new ArrayList<>();
                 for (User aUser : currentGamePlayers) {
@@ -116,15 +116,22 @@ public class StartGameServlet extends HttpServlet {
                 SubGame currentSubGame = new SubGame(currentGame, newRoundPlayers, roundNo);
 
                 // add new subGame to list of SubGames
-                listSubGameRounds.add(currentSubGame);
+//                listSubGameRounds.add(currentSubGame);
+                if(!listSubGameRounds.isEmpty())
+                    previousSubRoundWinner = listSubGameRounds.get(0).getSubGameWinner();
 
-                System.out.println(currentSubGame.getDrawPile().toString());
+                listSubGameRounds.add(0, currentSubGame);
+
+//                System.out.println(currentSubGame.getDrawPile().toString());
                 currentSubGame.getDrawPile().shuffleCards();
 
                 System.out.println(">> After shuffling");
 //                System.out.println(currentSubGame.getDrawPile().toString());
 
-                currentSubGame.setCurrentPlayer(getCurrentPlayer(currentGame, roundNo)); // determine 1st player
+                if(roundNo == 1)
+                    currentSubGame.setCurrentPlayer(getCurrentPlayer(currentGame, roundNo)); // determine 1st player
+                else
+                    currentSubGame.setCurrentPlayer(previousSubRoundWinner);
 
                 System.out.println(">> FirstPlayer is " + currentSubGame.getCurrentPlayer().getPlayer().getUsername());
                 
@@ -135,8 +142,12 @@ public class StartGameServlet extends HttpServlet {
                 // In subGamePlayers list, move all players to the left (earlier/lower)
                 //  of 1st player to the end of the list
                 System.out.println(">> Before reordering players\n" + currentSubGame.getPlayersListText());
-                currentSubGame.movePlayersBeforeFirstPlayerToEndOfList();
-                System.out.println(">>  After reordering players\n" + currentSubGame.getPlayersListText());
+                if(currentSubGame.getSubGamePlayers().get(0) != currentSubGame.getCurrentPlayer()) {
+//                    currentSubGame.movePlayersBeforeFirstPlayerToEndOfList();                    
+                    System.out.println(">>  After reordering players\n" + currentSubGame.getPlayersListText());
+                } else {
+                    System.out.println(">>  Not reordering players\n" + currentSubGame.getPlayersListText());
+                }
 
             // shuffle out 7 cards to each player one at a time in a clockwise
             //  (increasing index) fashion starting from the 1st player
@@ -236,6 +247,10 @@ public class StartGameServlet extends HttpServlet {
                 
             }
             
+            if (currentGame.isWaiting()) {
+                currentGame.startGame();
+            }
+            
             // wait for current player to 'add' valid card from his/her hand to discardPile
             // this happens in PlaySubGameServlet
         } else {
@@ -310,7 +325,11 @@ public class StartGameServlet extends HttpServlet {
 
     private Player getCurrentPlayer(Game currentGame, int roundNo) {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+        System.out.println(">>> In startGame getCurrentPlayer currentGame=" + currentGame.toString() + " roundNo=" + roundNo);
+
         if (roundNo == 1) {
+            System.out.println(">>> In startGame getCurrentPlayer roundNo == 1");
             // determine 1st player
             // Note: there is no 'dealer' player
             // automatically determine 1st player by
@@ -406,9 +425,18 @@ public class StartGameServlet extends HttpServlet {
 
             return currentHighestDrawPlayer;
 
-        } else {
+        } else { // shouldn't go in here anymore
+            System.out.println(">>> In startGame getCurrentPlayer roundNo != 1");
             // get winner of previous round
-            return currentGame.getSubGameList().get(roundNo - 1).getSubGameWinner();
+//            return currentGame.getSubGameList().get(roundNo - 1).getSubGameWinner();
+//            int subGameListSize = currentGame.getSubGameList().size();
+//            int currentSubGameIdx = subGameListSize - 1;
+//            int previousSubGameIdx = currentSubGameIdx - 1;
+
+//            return currentGame.getSubGameList().get(roundNo - 2).getSubGameWinner();
+//            return currentGame.getSubGameList().get(previousSubGameIdx).getSubGameWinner();
+//            return currentGame.getSubGameList().get(1).getSubGameWinner();
+            return currentGame.getSubGameList().get(1).getSubGameWinner();
         }
     }
 

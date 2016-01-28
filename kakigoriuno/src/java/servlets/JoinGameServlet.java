@@ -156,13 +156,14 @@ public class JoinGameServlet extends HttpServlet {
 
 //        System.out.println(">> outside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
         if (currentGame2.isStarted()) {
-            System.out.println(">>  inside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
+            System.out.println(">> joinGame " + loginUserName + " inside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
 //            req.setAttribute("mapGameId", strMapGameId);
 //            rd = req.getRequestDispatcher("startGame");
 //            rd = req.getRequestDispatcher("playSubGame");
 //            rd.forward(req, resp);
             session.setAttribute("mapGameId", strMapGameId);
-            resp.setHeader("Refresh", "0; playSubGame");
+            req.getRequestDispatcher("playSubGame").forward(req, resp);
+//            resp.setHeader("Refresh", "0; playSubGame");
         } else {
             // Set refresh, autoload time as 5 seconds
 //            req.setAttribute("mapGameId", strMapGameId);

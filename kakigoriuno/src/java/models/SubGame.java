@@ -61,7 +61,7 @@ public class SubGame implements Serializable {
     }
 
     private List<Direction> directionList; // clockwise=ascending-index, anti-clockwise=descending-index
-    
+
     private List<Colour> colourList;
 
     private int roundNo; // current game round number
@@ -278,36 +278,64 @@ public class SubGame implements Serializable {
         this.getDrawPile().shuffleCards();
     }
 
-    public void movePlayersBeforeFirstPlayerToEndOfList() {
-        int i = 0;
-        Player currentPlayer;
-        List<Player> tempList = new ArrayList();
-        List<Player> tempOrig = new ArrayList(this.subGamePlayers);
-
-        Collections.copy(tempOrig, this.subGamePlayers);
-
-//        while(currentPlayer != this.getCurrentPlayer()) {
-//            currentPlayer = this.subGamePlayers.remove(i);
-//            this.subGamePlayers.add(currentPlayer);
-//            i++;
-//            currentPlayer = this.subGamePlayers.get(i);
+    // not working. stays in a loop at the second round !!!
+//    public void movePlayersBeforeFirstPlayerToEndOfList() {
+//        int i = 0;
+//        Player privCurrentPlayer;
+//        List<Player> tempList = new ArrayList();
+////        List<Player> tempOrig = new ArrayList(this.subGamePlayers);
+//        List<Player> tempOrig = new ArrayList();
+//
+////        Collections.copy(tempOrig, this.subGamePlayers);
+//        
+//        for(Player aPlayer: this.subGamePlayers) {
+//            tempOrig.add(aPlayer);
 //        }
-        // move players before currentPlayer to tempList
-        for (Player aPlayer : tempOrig) {
-            if (aPlayer != this.getCurrentPlayer()) {
-                currentPlayer = this.subGamePlayers.remove(i++);
-                tempList.add(currentPlayer);
-            } else {
-                break;
-            }
-        }
+//
+////        while(currentPlayer != this.getCurrentPlayer()) {
+////            currentPlayer = this.subGamePlayers.remove(i);
+////            this.subGamePlayers.add(currentPlayer);
+////            i++;
+////            currentPlayer = this.subGamePlayers.get(i);
+////        }
+//        // move players before currentPlayer to tempList
+//        for (Player aPlayer : tempOrig) {
+//            if (aPlayer != this.getCurrentPlayer()) {
+////                currentPlayer = this.subGamePlayers.remove(i++);
+//                currentPlayer = this.subGamePlayers.remove(0);
+//                tempList.add(currentPlayer);
+//            } else {
+//                break;
+//            }
+//        }
+//
+//        // move players in tempList back to the end of currentGame SubPlayersList
+//        for (Player aPlayer : tempList) {
+//            this.subGamePlayers.add(aPlayer);
+//        }
 
-        // move players in tempList back to the end of currentGame SubPlayersList
-        for (Player aPlayer : tempList) {
-            this.subGamePlayers.add(aPlayer);
-        }
-
-    }
+//        Boolean notDone = true;
+//
+//        if (!this.subGamePlayers.isEmpty()) {
+//            if (this.subGamePlayers.get(0) != this.currentPlayer) {
+////                while (this.subGamePlayers.get(0) != this.currentPlayer) {
+//                while (notDone) {
+//                    privCurrentPlayer = this.subGamePlayers.remove(0);
+//                    if (privCurrentPlayer == this.currentPlayer) {
+//                        notDone = false;
+//                        this.subGamePlayers.add(0, privCurrentPlayer);
+//                    } else {
+//                        System.out.println(">> subGame movePlayersBeforeFirstPlayerToEndOfList currentPlayer = "
+//                                + this.currentPlayer.getPlayer().getUsername()
+//                                + " privCurrentPlayer = "
+//                                + privCurrentPlayer.getPlayer().getUsername());
+//                        this.subGamePlayers.add(privCurrentPlayer);
+//                    }
+//                }
+//            }
+//        }
+//
+//    }
 
     public String getPlayersListText() {
         String rtnString = "";
@@ -549,16 +577,16 @@ public class SubGame implements Serializable {
         Player nextPlayer = null, normalNextPlayer, privCurrentPlayer;
         Direction currentDirection;
         Colour chosenColour, chosenCardColour;
-        
+
         currentDirection = this.getLastDirection();
-        
+
         privCurrentPlayer = this.currentPlayer;
         normalNextPlayer = this.getNextPlayer(privCurrentPlayer);
-        
+
         chosenCardColour = chosenCard.getCardColour();
-        
-        switch(colourChoice) {
-            case "red": 
+
+        switch (colourChoice) {
+            case "red":
                 chosenColour = Colour.RED;
                 break;
             case "yellow":
@@ -570,11 +598,11 @@ public class SubGame implements Serializable {
             case "blue":
                 chosenColour = Colour.BLUE;
                 break;
-            default: 
+            default:
                 chosenColour = null;
                 break;
         }
-        
+
         switch (chosenCard.getCardAction()) {
             case NUMBER:
                 // normal operation
@@ -590,19 +618,21 @@ public class SubGame implements Serializable {
                 break;
             case REVERSE:
                 // reverse direction
-                if(currentDirection.equals(Direction.CLOCKWISE))
+                if (currentDirection.equals(Direction.CLOCKWISE)) {
                     this.directionList.add(Direction.ANTICLOCKWISE);
-                else
+                } else {
                     this.directionList.add(Direction.CLOCKWISE);
+                }
                 this.colourList.add(chosenCardColour);
                 // there's a special case in a two-players subGame/round where a reverse is like a skip
-                if(this.getSubGamePlayers().size() == 2)
-                    // play returns to the currentPlayer
+                if (this.getSubGamePlayers().size() == 2) // play returns to the currentPlayer
+                {
                     nextPlayer = this.getAfterSkipPlayer(privCurrentPlayer);
-                else 
-                    // not a two-players game
-                    // get new next player after direction change
+                } else // not a two-players game
+                // get new next player after direction change
+                {
                     nextPlayer = this.getNextPlayer(this.currentPlayer);
+                }
                 break;
             case DRAW2:
                 this.directionList.add(currentDirection);
