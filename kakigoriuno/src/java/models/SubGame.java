@@ -279,9 +279,9 @@ public class SubGame implements Serializable {
     }
 
     // not working. stays in a loop at the second round !!!
-//    public void movePlayersBeforeFirstPlayerToEndOfList() {
+    public void movePlayersBeforeFirstPlayerToEndOfList() {
 //        int i = 0;
-//        Player privCurrentPlayer;
+        Player privCurrentPlayer;
 //        List<Player> tempList = new ArrayList();
 ////        List<Player> tempOrig = new ArrayList(this.subGamePlayers);
 //        List<Player> tempOrig = new ArrayList();
@@ -318,24 +318,24 @@ public class SubGame implements Serializable {
 //
 //        if (!this.subGamePlayers.isEmpty()) {
 //            if (this.subGamePlayers.get(0) != this.currentPlayer) {
-////                while (this.subGamePlayers.get(0) != this.currentPlayer) {
+                while (this.subGamePlayers.get(0) != this.currentPlayer) {
 //                while (notDone) {
-//                    privCurrentPlayer = this.subGamePlayers.remove(0);
+                    privCurrentPlayer = this.subGamePlayers.remove(0);
 //                    if (privCurrentPlayer == this.currentPlayer) {
 //                        notDone = false;
 //                        this.subGamePlayers.add(0, privCurrentPlayer);
 //                    } else {
-//                        System.out.println(">> subGame movePlayersBeforeFirstPlayerToEndOfList currentPlayer = "
-//                                + this.currentPlayer.getPlayer().getUsername()
-//                                + " privCurrentPlayer = "
-//                                + privCurrentPlayer.getPlayer().getUsername());
-//                        this.subGamePlayers.add(privCurrentPlayer);
+                        System.out.println(">> subGame movePlayersBeforeFirstPlayerToEndOfList currentPlayer = "
+                                + this.currentPlayer.getPlayer().getUsername()
+                                + " privCurrentPlayer = "
+                                + privCurrentPlayer.getPlayer().getUsername());
+                        this.subGamePlayers.add(privCurrentPlayer);
 //                    }
-//                }
+                }
 //            }
 //        }
 //
-//    }
+    }
 
     public String getPlayersListText() {
         String rtnString = "";

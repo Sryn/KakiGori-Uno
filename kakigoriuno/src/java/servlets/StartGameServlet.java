@@ -117,8 +117,17 @@ public class StartGameServlet extends HttpServlet {
 
                 // add new subGame to list of SubGames
 //                listSubGameRounds.add(currentSubGame);
-                if(!listSubGameRounds.isEmpty())
-                    previousSubRoundWinner = listSubGameRounds.get(0).getSubGameWinner();
+                if(!listSubGameRounds.isEmpty()) {
+                    User previousWinnerUser = listSubGameRounds.get(0).getSubGameWinner().getPlayer();
+                    
+                    for(Player aPlayer: newRoundPlayers) {
+                        if(aPlayer.getPlayer() == previousWinnerUser);
+                        previousSubRoundWinner = aPlayer;
+                        break;
+                    }
+                    
+//                    previousSubRoundWinner = new Player(previousWinnerUser);
+                }
 
                 listSubGameRounds.add(0, currentSubGame);
 
@@ -143,7 +152,7 @@ public class StartGameServlet extends HttpServlet {
                 //  of 1st player to the end of the list
                 System.out.println(">> Before reordering players\n" + currentSubGame.getPlayersListText());
                 if(currentSubGame.getSubGamePlayers().get(0) != currentSubGame.getCurrentPlayer()) {
-//                    currentSubGame.movePlayersBeforeFirstPlayerToEndOfList();                    
+                    currentSubGame.movePlayersBeforeFirstPlayerToEndOfList();                    
                     System.out.println(">>  After reordering players\n" + currentSubGame.getPlayersListText());
                 } else {
                     System.out.println(">>  Not reordering players\n" + currentSubGame.getPlayersListText());

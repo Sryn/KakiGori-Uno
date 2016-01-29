@@ -25,7 +25,8 @@ public class VerifyUserServlet extends HttpServlet {
 //    private static final String INSERT_MEMBER = "insert into member values (?, ?, ?, ?)";
     private static final String GET_USER = "select * from acme.user as u where u.username=?";
 
-    @Resource(lookup = "jdbc/acme")
+//    @Resource(lookup = "jdbc/acme")
+    @Resource(lookup = "jdbc/KakiGoriUno")
     private DataSource ds;
 
 //    @Inject

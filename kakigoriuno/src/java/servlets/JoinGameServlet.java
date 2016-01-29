@@ -198,6 +198,7 @@ public class JoinGameServlet extends HttpServlet {
             trPlayerList = trPlayerList.concat("</tr>\n");
             
             if(aUser.getTempPoints() >= 500) {
+//            if(aUser.getTempPoints() >= 100) { // temporary only to test code: Worked well
                 gameFinished = true;
                 currentGame2.finishGame();
             }                
