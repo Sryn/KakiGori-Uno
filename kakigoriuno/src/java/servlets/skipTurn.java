@@ -54,7 +54,7 @@ public class skipTurn extends HttpServlet {
         Boolean doDraw = true;
 
         User loginUser = (User) session.getAttribute("loginuser");
-        strMapGameId = (String) session.getAttribute("mapGameId");
+        strMapGameId = session.getAttribute("mapGameId").toString();
         lonMapGameId = Long.valueOf(strMapGameId);
         currentGame = gamesMap.get(lonMapGameId);
         currentSubGame = currentGame.getCurrentSubGame();

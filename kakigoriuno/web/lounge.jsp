@@ -76,8 +76,10 @@
                                 <input type="radio" name=mapGameId value="${game.getGameId()}"/>
                             </c:if>
                             <c:if test="${game.getGamePlayers().size() <= 10}">
+                                <!-- Should do another level of IF to prevent joining of already started games -->
                                 <input type="radio" name=mapGameId value="${game.getGameId()}"/>
                             </c:if>
+                            <!-- Don't offer a radio button to join game if this game already has max 10 players -->
                         </td>
                     </tr>
                 </c:forEach>

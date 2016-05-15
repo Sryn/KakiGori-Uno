@@ -67,7 +67,7 @@ public class PlaySubGameServlet extends HttpServlet {
         loginUser = (User) session.getAttribute("loginuser");
         loginUserName = loginUser.getUsername();
 
-        strMapGameId = (String) session.getAttribute("mapGameId");
+        strMapGameId = session.getAttribute("mapGameId").toString();
 //        System.out.println("> playSubGame loginUser=" + loginUserName + "\t sesAtt mapGameId=" + strMapGameId);
 
         lonMapGameId = Long.valueOf(strMapGameId);

@@ -68,6 +68,7 @@ public class SubGame implements Serializable {
 
     private SubGameStatus subGameStatus; // preparing, started, suspended, finished
 
+    @OneToOne
     private Player subGameWinner;
 
     public enum SubGameStatus {
@@ -278,63 +279,20 @@ public class SubGame implements Serializable {
         this.getDrawPile().shuffleCards();
     }
 
-    // not working. stays in a loop at the second round !!!
+    // not working. stays in a loop at the second round !!! <- fixed
+    // working now because I was giving it a Player of the same user but that
+    //  player was an object from the previous subgame/round
     public void movePlayersBeforeFirstPlayerToEndOfList() {
-//        int i = 0;
         Player privCurrentPlayer;
-//        List<Player> tempList = new ArrayList();
-////        List<Player> tempOrig = new ArrayList(this.subGamePlayers);
-//        List<Player> tempOrig = new ArrayList();
-//
-////        Collections.copy(tempOrig, this.subGamePlayers);
-//        
-//        for(Player aPlayer: this.subGamePlayers) {
-//            tempOrig.add(aPlayer);
-//        }
-//
-////        while(currentPlayer != this.getCurrentPlayer()) {
-////            currentPlayer = this.subGamePlayers.remove(i);
-////            this.subGamePlayers.add(currentPlayer);
-////            i++;
-////            currentPlayer = this.subGamePlayers.get(i);
-////        }
-//        // move players before currentPlayer to tempList
-//        for (Player aPlayer : tempOrig) {
-//            if (aPlayer != this.getCurrentPlayer()) {
-////                currentPlayer = this.subGamePlayers.remove(i++);
-//                currentPlayer = this.subGamePlayers.remove(0);
-//                tempList.add(currentPlayer);
-//            } else {
-//                break;
-//            }
-//        }
-//
-//        // move players in tempList back to the end of currentGame SubPlayersList
-//        for (Player aPlayer : tempList) {
-//            this.subGamePlayers.add(aPlayer);
-//        }
 
-//        Boolean notDone = true;
-//
-//        if (!this.subGamePlayers.isEmpty()) {
-//            if (this.subGamePlayers.get(0) != this.currentPlayer) {
-                while (this.subGamePlayers.get(0) != this.currentPlayer) {
-//                while (notDone) {
-                    privCurrentPlayer = this.subGamePlayers.remove(0);
-//                    if (privCurrentPlayer == this.currentPlayer) {
-//                        notDone = false;
-//                        this.subGamePlayers.add(0, privCurrentPlayer);
-//                    } else {
-                        System.out.println(">> subGame movePlayersBeforeFirstPlayerToEndOfList currentPlayer = "
-                                + this.currentPlayer.getPlayer().getUsername()
-                                + " privCurrentPlayer = "
-                                + privCurrentPlayer.getPlayer().getUsername());
-                        this.subGamePlayers.add(privCurrentPlayer);
-//                    }
-                }
-//            }
-//        }
-//
+        while (this.subGamePlayers.get(0) != this.currentPlayer) {
+            privCurrentPlayer = this.subGamePlayers.remove(0);
+            System.out.println(">> subGame movePlayersBeforeFirstPlayerToEndOfList currentPlayer = "
+                    + this.currentPlayer.getPlayer().getUsername()
+                    + " privCurrentPlayer = "
+                    + privCurrentPlayer.getPlayer().getUsername());
+            this.subGamePlayers.add(privCurrentPlayer);
+        }
     }
 
     public String getPlayersListText() {

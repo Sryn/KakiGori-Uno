@@ -52,7 +52,7 @@ public class StartGameServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        String strMapGameId, loginUserName;
+        String strMapGameId="", loginUserName;
         Game currentGame;
         User loginUser;
         int currGameNoOfPlayers, roundNo;
@@ -64,12 +64,26 @@ public class StartGameServlet extends HttpServlet {
         loginUser = (User) session.getAttribute("loginuser");
         loginUserName = loginUser.getUsername();
 
-        strMapGameId = req.getParameter("mapGameId");
+        if (null != req.getParameter("mapGameId")) {
+            // this loginUser started this subGame
+            strMapGameId = req.getParameter("mapGameId");
+        }
         System.out.println("> loginUser=" + loginUserName + " reqPar mapGameId=" + strMapGameId);
         if (null == strMapGameId) {
             // user was autoforwarded here
-            strMapGameId = (String) req.getAttribute("mapGameId");
-            System.out.println("> loginUser=" + loginUserName + " reqAtt mapGameId=" + strMapGameId);
+            
+//            if (null != req.getAttribute("mapGameId"))
+//                strMapGameId = (String) req.getAttribute("mapGameId");
+//            System.out.println("> loginUser=" + loginUserName + " reqAtt mapGameId=" + strMapGameId);
+
+            if (null != session.getAttribute("mapGameId"))
+                strMapGameId = (String) session.getAttribute("mapGameId");
+            System.out.println("> loginUser=" + loginUserName + " sessAtt mapGameId=" + strMapGameId);
+        }
+        
+        if(null == strMapGameId) {
+            // something is wrong here if strMapGameId is null
+            req.getRequestDispatcher("joinGame").forward(req, resp);            
         }
 
         Long lonMapGameId = Long.valueOf(strMapGameId);
@@ -103,7 +117,7 @@ public class StartGameServlet extends HttpServlet {
             // check if new round has been prepared, if not, prepare new round
             if (listSubGameRounds.size() < roundNo) {
                 
-                Player previousSubRoundWinner = null;
+                Player previousSubGameWinner = null;
                 
                 // get gamePlayers list from Game and populate subGamePlayers list
                 List<Player> newRoundPlayers = new ArrayList<>();
@@ -117,12 +131,13 @@ public class StartGameServlet extends HttpServlet {
 
                 // add new subGame to list of SubGames
 //                listSubGameRounds.add(currentSubGame);
+
                 if(!listSubGameRounds.isEmpty()) {
                     User previousWinnerUser = listSubGameRounds.get(0).getSubGameWinner().getPlayer();
                     
                     for(Player aPlayer: newRoundPlayers) {
                         if(aPlayer.getPlayer() == previousWinnerUser);
-                        previousSubRoundWinner = aPlayer;
+                        previousSubGameWinner = aPlayer;
                         break;
                     }
                     
@@ -140,7 +155,7 @@ public class StartGameServlet extends HttpServlet {
                 if(roundNo == 1)
                     currentSubGame.setCurrentPlayer(getCurrentPlayer(currentGame, roundNo)); // determine 1st player
                 else
-                    currentSubGame.setCurrentPlayer(previousSubRoundWinner);
+                    currentSubGame.setCurrentPlayer(previousSubGameWinner);
 
                 System.out.println(">> FirstPlayer is " + currentSubGame.getCurrentPlayer().getPlayer().getUsername());
                 

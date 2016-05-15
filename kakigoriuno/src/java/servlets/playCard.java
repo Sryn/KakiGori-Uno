@@ -60,7 +60,7 @@ public class playCard extends HttpServlet {
         Colour validColour;
 
         User loginUser = (User) session.getAttribute("loginuser");
-        strMapGameId = (String) session.getAttribute("mapGameId");
+        strMapGameId = session.getAttribute("mapGameId").toString();
         lonMapGameId = Long.valueOf(strMapGameId);
         currentGame = gamesMap.get(lonMapGameId);
         currentSubGame = currentGame.getCurrentSubGame();
@@ -101,8 +101,9 @@ public class playCard extends HttpServlet {
                 // check if this was currentPlayer's last card, which means s/he's the subGame winner
                 if (currentLoginPlayer.getHand().getListOfCards().isEmpty()) {
                     // subGame winner
-                    System.out.println(">>> Player " + currentLoginPlayer.getPlayer().getUsername() + " is the winner of this subgame");
+                    //System.out.println(">>> Player " + currentLoginPlayer.getPlayer().getUsername() + " is the winner of this subgame");
                     currentSubGame.setSubGameWinner(currentLoginPlayer);
+                    System.out.println(">>> Player " + currentSubGame.getSubGameWinner().getPlayer().getUsername() + " is the winner of this subgame");
                     currentSubGame.finishSubGame();
                     currentGame.setupGame();
                     if(currentGame.getGameStyle().equals(GameStyle.LOWESTPOINTS)) {

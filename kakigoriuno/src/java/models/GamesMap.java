@@ -144,7 +144,13 @@ public class GamesMap implements Serializable {
 //        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 
         try {
-            this.gamesMap.put(gameId, newGame);
+            Game aGame = this.gamesMap.put(gameId, newGame);
+            String str_aGame;
+            if(null == aGame)
+                str_aGame = "NULL";
+            else
+                str_aGame = aGame.toString();
+            System.out.println(">>> put previous associated map value for key gameId=" + gameId + " is " + str_aGame);
         } catch (NullPointerException ex) {
             System.out.println(">>> put NullPointerException " + ex.toString());
         }

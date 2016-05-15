@@ -54,64 +54,20 @@ public class JoinGameServlet extends HttpServlet {
         Game currentGame2;
 //        List<User> currentGamePlayers = new ArrayList();
         List<User> currentGamePlayers2;
-        SubGame previousGame;
+        SubGame previousSubGame;
 
         loginUser = (User) session.getAttribute("loginuser");
         loginUserName = loginUser.getUsername();
-//        System.out.println(">>> loginUser=" + loginUser.toString());
-        /*
-        if (null == req.getParameter("gameId")) {
-            // not a gameList gameId
-            if (null == req.getParameter("mapGameId")) {
-                // not a gameMap gameId
-                // therefore an error
-                System.out.println(">>> can't get req.getParameter gameId nor mapGameId");
-            } else {
-                // a gameMap gameId
-                // do gamesMap process
-                System.out.println(">>> got a req.getParameter mapGameId=" + req.getParameter("mapGameId"));
 
-            }
-        } else // a gameList gameId
-         if (null == req.getParameter("mapGameId")) {
-                // not a gameMap gameId
-                // do gamesList process
-                System.out.println(">>> got a req.getParameter gameId=" + req.getParameter("mapGameId"));
-
-            } else {
-                // a gameMap gameId
-                // therefore an error
-                System.out.println(">>> got both req.getParameter gameId and mapGameId");
-            }
-
-        if (null == session.getAttribute("gameId")) {
-            strGameId = req.getParameter("gameId");
-            lonGameId = Long.valueOf(strGameId);
-            strTableNo = getIntOfSumOfLongDigits(lonGameId).toString();
-            session.setAttribute("gameId", lonGameId);
-            System.out.println(">>> from req strGameId = " + strGameId);
-        } else {
-            strGameId = session.getAttribute("gameId").toString();
-            lonGameId = Long.valueOf(strGameId);
-            strTableNo = getIntOfSumOfLongDigits(lonGameId).toString();
-            session.setAttribute("gameId", lonGameId);
-            System.out.println(">>> from session strGameId = " + strGameId);
-        }
-
-        TableNo = strTableNo;
-
-        currentGame.setGameId(lonGameId);
-        currentGamePlayers.add(loginUser);
-        currentGame.setGamePlayers(currentGamePlayers);
-
-        System.out.println(">>> gameId: " + strGameId + " @Index=" + Integer.toString(gamesList.indexOf(currentGame)));
-         */
         if (null == session.getAttribute("mapGameId")) {
-            strMapGameId = req.getParameter("mapGameId");
-//            System.out.println(">>> from req strMapGameId = " + strMapGameId);
+            // should enter here from lounge.jsp
+            if(null != req.getParameter("mapGameId"))
+                strMapGameId = req.getParameter("mapGameId");
+            System.out.println(">>> from req strMapGameId = " + strMapGameId);
         } else if(null != session.getAttribute("mapGameId")) {
+            // should enter here from ending of subgame
             strMapGameId = session.getAttribute("mapGameId").toString();
-//            System.out.println(">>> from session strMapGameId = " + strMapGameId);
+            System.out.println(">>> from session strMapGameId = " + strMapGameId);
 //        } else {
         }
             // somehow the radio button in lounge deactivated (after 5 secs)
@@ -122,16 +78,18 @@ public class JoinGameServlet extends HttpServlet {
 //        }
         Long lonMapGameId = Long.valueOf(strMapGameId);
 //        String strMapTableNo = getIntOfSumOfLongDigits(lonMapGameId).toString();
-        session.setAttribute("mapGameId", lonMapGameId);
+        if (null == session.getAttribute("mapGameId"))
+            session.setAttribute("mapGameId", lonMapGameId);
 
         currentGame2 = gamesMap.get(lonMapGameId);
-        String gameInstanceName = currentGame2.toString();
-        gameInstanceName = gameInstanceName.substring(12);
+//        String gameInstanceName = currentGame2.toString();
+//        gameInstanceName = gameInstanceName.substring(12);
 //        System.out.println(">>> currentGame2 = " + currentGame2.toString() + " - " + gameInstanceName);
 //        System.out.println(">> currentGame2 = " + currentGame2);
 
-        String strMapTableNo = currentGame2.getGameName();
-        TableNo = strMapTableNo;
+//        String strMapTableNo = currentGame2.getGameName();
+//        TableNo = strMapTableNo;
+        TableNo = currentGame2.getGameName();
         
         if (null == currentGame2.getGamePlayers()) {
             // no gamePlayers yet
@@ -156,12 +114,15 @@ public class JoinGameServlet extends HttpServlet {
 
 //        System.out.println(">> outside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
         if (currentGame2.isStarted()) {
-            System.out.println(">> joinGame " + loginUserName + " inside check mapGameId=" + strMapGameId + " status=" + currentGame2.getGameStatus());
+            System.out.println(">> joinGame " + loginUserName 
+                    + " inside check mapGameId=" + strMapGameId 
+                    + " status=" + currentGame2.getGameStatus());
 //            req.setAttribute("mapGameId", strMapGameId);
 //            rd = req.getRequestDispatcher("startGame");
 //            rd = req.getRequestDispatcher("playSubGame");
 //            rd.forward(req, resp);
-            session.setAttribute("mapGameId", strMapGameId);
+            if (null == session.getAttribute("mapGameId"))
+                session.setAttribute("mapGameId", strMapGameId);
             req.getRequestDispatcher("playSubGame").forward(req, resp);
 //            resp.setHeader("Refresh", "0; playSubGame");
         } else {
@@ -172,13 +133,14 @@ public class JoinGameServlet extends HttpServlet {
 
         String trPlayerList = "";
 
-        int i = 1, roundsPlayed = 0, noOfSubGames = 0;
+        int i = 1, roundsPlayed = 0;
+//        int noOfSubGames = 0;
         
         if(null != currentGame2.getSubGameList()) { // game has started
             roundsPlayed = currentGame2.getSubGameList().size();
                         
         } else { // game hasn't started
-            // reset users tempPoints to 0 each
+            // set users tempPoints to 0 each
             for(User aUser: currentGame2.getGamePlayers()) {
                 aUser.setTempPoints(0);
             }
@@ -192,6 +154,7 @@ public class JoinGameServlet extends HttpServlet {
             trPlayerList = trPlayerList.concat("<td>");
             trPlayerList = trPlayerList.concat(aUser.getUsername());
             trPlayerList = trPlayerList.concat("</td>\n");
+            // subGame points columns here
             trPlayerList = trPlayerList.concat("<td>");
             trPlayerList = trPlayerList.concat(Integer.toString(aUser.getTempPoints()));
             trPlayerList = trPlayerList.concat("</td>\n");
@@ -215,14 +178,20 @@ public class JoinGameServlet extends HttpServlet {
             if(null != currentGame2.getSubGameList()) {
                 // there are subgames available
                 // get last subgame in list
-                noOfSubGames = currentGame2.getSubGameList().size();
-                previousGame = currentGame2.getSubGameList().get(noOfSubGames - 1);
-                if(null != previousGame.getSubGameWinner()) {
-                    prevSubGameWinner = previousGame.getSubGameWinner().getPlayer().getUsername();
+//                noOfSubGames = currentGame2.getSubGameList().size();
+//                if(noOfSubGames > 1)
+//                    previousSubGame = currentGame2.getSubGameList().get(noOfSubGames - 1);
+//                else
+                    previousSubGame = currentGame2.getSubGameList().get(0);
+                
+                if(null != previousSubGame.getSubGameWinner()) {
+                    prevSubGameWinner = previousSubGame.getSubGameWinner().getPlayer().getUsername();
 
                     displayWinner = displayWinner.concat("<h1>Previous Round Winner is ");
                     displayWinner = displayWinner.concat(prevSubGameWinner);
                     displayWinner = displayWinner.concat("</h1>");
+                    
+                    System.out.println(">>> " + loginUserName + " gameFinished=" + gameFinished + ": " + displayWinner);
                 }
             }
         }
@@ -272,6 +241,7 @@ public class JoinGameServlet extends HttpServlet {
                 + "<tr>\n"
                 + "<td>Player Index</td>\n"
                 + "<td>Player UserName</td>\n"
+                + "" // subGame points columns' headers here
                 + "<td>Total Points</td>\n"
                 + "</tr>\n"
                 + trPlayerList
@@ -345,9 +315,11 @@ public class JoinGameServlet extends HttpServlet {
         rtnString = rtnString.concat("");
         
         if(style.equals(GameStyle.LOWESTPOINTS)) {
-            rtnString = rtnString.concat("<h4><i>Note: Game ends when any player reaches 500 points and the winner is the player with lowest points.</i></h4>");
+            rtnString = rtnString.concat("<h4><i>Note: Game ends when any player reaches 500 points");
+            rtnString = rtnString.concat(" and the winner is the player with lowest points.</i></h4>");
         } else if(style.equals(GameStyle.FIRSTTO500)) {
-            rtnString = rtnString.concat("<h4><i>Note: Game ends when any player reaches 500 points and the player with the highest points is the winner.</i></h4>");
+            rtnString = rtnString.concat("<h4><i>Note: Game ends when any player reaches 500 points");
+            rtnString = rtnString.concat(" and the player with the highest points is the winner.</i></h4>");
         } else {
             System.out.println("### ERROR: Unknown GameStyle = " + style.toString());
         }

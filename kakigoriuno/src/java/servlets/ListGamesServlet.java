@@ -1,13 +1,13 @@
 package servlets;
 
-import static utilities.Utilities.*;
+//import static utilities.Utilities.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+//import java.util.ArrayList;
+//import java.util.HashMap;
+//import java.util.Iterator;
+//import java.util.List;
+//import java.util.Map;
+//import java.util.Set;
 import javax.inject.Inject;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -28,7 +28,7 @@ public class ListGamesServlet extends HttpServlet {
     RequestDispatcher rd = null;
 
     // need the ArrayList, else NullPointerException on add
-    public List<Game> gamesList = new ArrayList();
+//    public List<Game> gamesList = new ArrayList();
 //    public Map<Long, Game> gamesMap = new HashMap<>();
 
     @Override
@@ -36,7 +36,7 @@ public class ListGamesServlet extends HttpServlet {
             throws ServletException, IOException {
 
 //        HttpSession session = req.getSession();
-        ServletContext appScopeServlet = req.getServletContext();
+//        ServletContext appScopeServlet = req.getServletContext();
 
         int i = 0;
         System.out.println(">>> List of Games in gamesMap:");
@@ -134,23 +134,23 @@ public class ListGamesServlet extends HttpServlet {
         return newGame;
     }
 
-    private void addNewGameToGamesList(HttpServletRequest req) {
-        Game newGame = getNewGame();
-        ServletContext appScopeServlet = req.getServletContext();
+//    private void addNewGameToGamesList(HttpServletRequest req) {
+//        Game newGame = getNewGame();
+//        ServletContext appScopeServlet = req.getServletContext();
+//
+//        System.out.println(">>> newGame: " + newGame.toString());
+//        boolean add = gamesList.add(newGame);
+//        appScopeServlet.setAttribute("gamesList", gamesList);
+//    }
 
-        System.out.println(">>> newGame: " + newGame.toString());
-        boolean add = gamesList.add(newGame);
-        appScopeServlet.setAttribute("gamesList", gamesList);
-    }
-
-    private void addNewGameToGamesMap(HttpServletRequest req) {
-        Game newGame = getNewGame();
-        ServletContext appScopeServlet = req.getServletContext();
-
-        System.out.println(">>> newGame: " + newGame.toString());
-        gamesMap.put(newGame.getGameId(), newGame);
-        appScopeServlet.setAttribute("gamesMap", gamesMap);
-    }
+//    private void addNewGameToGamesMap(HttpServletRequest req) {
+//        Game newGame = getNewGame();
+//        ServletContext appScopeServlet = req.getServletContext();
+//
+//        System.out.println(">>> newGame: " + newGame.toString());
+//        gamesMap.put(newGame.getGameId(), newGame);
+//        appScopeServlet.setAttribute("gamesMap", gamesMap);
+//    }
 
     private void addGameToInjectedGamesMap(HttpServletRequest req, Game newGame) {
         ServletContext appScopeServlet = req.getServletContext();
