@@ -14,7 +14,7 @@ Have a message board per table<br />
 Have a common message board in the lounge, with only registered users able to chat<br />
 Link with social networks to register<br />
 !!! Do all this in WebSockets + AJAX<br />
-Quit/Exit button on table list page after login
+Quit/Exit button on table list page after login<br />
 <br />
 Bug:<br />
 !!! Fix the draw card, skip turn buttons visibility code<br />
